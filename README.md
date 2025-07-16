@@ -396,8 +396,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 💬 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/ipmapaws/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/ipmapaws/discussions)
+- **Issues**: [GitHub Issues](https://github.com/tengfone/ipmapaws/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/tengfone/ipmapaws/discussions)
 - **API Docs**: [https://ipmapaws.vercel.app/docs](https://ipmapaws.vercel.app/docs)
 
 ## 🙏 Acknowledgments
