@@ -65,11 +65,39 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Only serve cached data - no user-triggered fetching
-    const data = await getCachedData();
+    // Try to get cached data first
+    let data = await getCachedData();
+    
+    // If no cached data and in serverless environment, try to fetch directly
+    if (!data && process.env.VERCEL) {
+      console.log('[API] No cached data in serverless environment, fetching directly...');
+      try {
+        const response = await fetch('https://ip-ranges.amazonaws.com/ip-ranges.json', {
+          headers: {
+            'User-Agent': 'IPMapAWS/1.0 (API Fallback)',
+            'Accept': 'application/json',
+          },
+          cache: 'no-store'
+        });
+        
+        if (response.ok) {
+          data = await response.json();
+          // Try to cache it for future requests (may fail silently)
+          if (data) {
+            const { setCachedData } = await import('@/lib/cache');
+            setCachedData(data).catch(err => {
+              console.log('[API] Failed to cache fallback data:', err.message);
+            });
+            console.log('[API] Successfully fetched data directly from AWS');
+          }
+        }
+      } catch (fallbackError) {
+        console.error('[API] Direct fetch fallback failed:', fallbackError);
+      }
+    }
     
     if (!data) {
-      // No cached data available yet
+      // No cached data available and fallback failed
       return NextResponse.json(
         { 
           error: 'Data not available yet',

@@ -14,29 +14,36 @@ let isRunning = false;
 async function fetchAWSIPRanges(): Promise<AWSIPRanges> {
   console.log('[BackgroundSync] Fetching AWS IP ranges...');
   
-  const response = await fetch(AWS_IP_RANGES_URL, {
-    headers: {
-      'User-Agent': 'IPMapAWS/1.0 (Background Sync)',
-      'Accept': 'application/json',
-    },
-    cache: 'no-store'
-  });
+  try {
+    const response = await fetch(AWS_IP_RANGES_URL, {
+      headers: {
+        'User-Agent': 'IPMapAWS/1.0 (Background Sync)',
+        'Accept': 'application/json',
+      },
+      cache: 'no-store',
+      // Add timeout for serverless environments
+      signal: AbortSignal.timeout(30000) // 30 second timeout
+    });
 
-  if (!response.ok) {
-    throw new Error(`AWS API responded with status: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`AWS API responded with status: ${response.status} ${response.statusText}`);
+    }
+
+    const data: AWSIPRanges = await response.json();
+
+    // Validate the response structure
+    if (!data.prefixes || !data.ipv6_prefixes || !data.syncToken || !data.createDate) {
+      throw new Error('Invalid AWS IP ranges response structure');
+    }
+
+    console.log(`[BackgroundSync] Successfully fetched ${data.prefixes.length + data.ipv6_prefixes.length} IP prefixes`);
+    console.log(`[BackgroundSync] AWS createDate: ${data.createDate}, syncToken: ${data.syncToken}`);
+    
+    return data;
+  } catch (error) {
+    console.error('[BackgroundSync] Failed to fetch AWS IP ranges:', error);
+    throw error;
   }
-
-  const data: AWSIPRanges = await response.json();
-
-  // Validate the response structure
-  if (!data.prefixes || !data.ipv6_prefixes || !data.syncToken || !data.createDate) {
-    throw new Error('Invalid AWS IP ranges response structure');
-  }
-
-  console.log(`[BackgroundSync] Successfully fetched ${data.prefixes.length + data.ipv6_prefixes.length} IP prefixes`);
-  console.log(`[BackgroundSync] AWS createDate: ${data.createDate}, syncToken: ${data.syncToken}`);
-  
-  return data;
 }
 
 /**
@@ -49,16 +56,33 @@ async function shouldUpdate(): Promise<{ needsUpdate: boolean; reason: string; r
     
     // If no cache exists, we definitely need to update
     if (!cached.data) {
-      const remoteData = await fetchAWSIPRanges();
-      return { 
-        needsUpdate: true, 
-        reason: 'No cached data found',
-        remoteData 
-      };
+      try {
+        const remoteData = await fetchAWSIPRanges();
+        return { 
+          needsUpdate: true, 
+          reason: 'No cached data found',
+          remoteData 
+        };
+      } catch (error) {
+        console.error('[BackgroundSync] Failed to fetch initial data:', error);
+        return {
+          needsUpdate: false,
+          reason: `Failed to fetch initial data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        };
+      }
     }
 
     // Fetch remote data to compare
-    const remoteData = await fetchAWSIPRanges();
+    let remoteData: AWSIPRanges;
+    try {
+      remoteData = await fetchAWSIPRanges();
+    } catch (error) {
+      console.error('[BackgroundSync] Failed to fetch remote data for comparison:', error);
+      return {
+        needsUpdate: false,
+        reason: `Failed to check for updates: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
     
     // Compare createDate and syncToken
     const createDateChanged = remoteData.createDate !== cached.createDate;
@@ -117,8 +141,13 @@ async function performSync(): Promise<void> {
     
     if (needsUpdate && remoteData) {
       console.log(`[BackgroundSync] ${reason} - updating cache...`);
-      await setCachedData(remoteData);
-      console.log('[BackgroundSync] Cache updated successfully');
+      try {
+        await setCachedData(remoteData);
+        console.log('[BackgroundSync] Cache updated successfully');
+      } catch (cacheError) {
+        console.error('[BackgroundSync] Failed to update cache, but data is available:', cacheError);
+        // Cache failure shouldn't be fatal - the API can still serve fresh data
+      }
     } else {
       console.log(`[BackgroundSync] ${reason}`);
     }
@@ -137,6 +166,16 @@ async function performSync(): Promise<void> {
  * Start the background sync process
  */
 export function startBackgroundSync(): void {
+  // In serverless environments, don't start persistent intervals
+  if (process.env.VERCEL) {
+    console.log('[BackgroundSync] Serverless environment detected - performing one-time sync');
+    // Just perform a sync without setting up intervals
+    performSync().catch(error => {
+      console.error('[BackgroundSync] Initial sync failed:', error);
+    });
+    return;
+  }
+
   if (syncInterval) {
     console.log('[BackgroundSync] Already running');
     return;
@@ -145,10 +184,16 @@ export function startBackgroundSync(): void {
   console.log(`[BackgroundSync] Starting background sync (check every ${CHECK_INTERVAL / (60 * 1000)} minutes)`);
   
   // Perform initial sync
-  performSync();
+  performSync().catch(error => {
+    console.error('[BackgroundSync] Initial sync failed:', error);
+  });
   
-  // Set up periodic sync
-  syncInterval = setInterval(performSync, CHECK_INTERVAL);
+  // Set up periodic sync (only in non-serverless environments)
+  syncInterval = setInterval(() => {
+    performSync().catch(error => {
+      console.error('[BackgroundSync] Periodic sync failed:', error);
+    });
+  }, CHECK_INTERVAL);
 }
 
 /**
@@ -165,10 +210,11 @@ export function stopBackgroundSync(): void {
 /**
  * Get sync status
  */
-export function getSyncStatus(): { running: boolean; interval: number } {
+export function getSyncStatus(): { running: boolean; interval: number; environment: string } {
   return {
     running: syncInterval !== null,
-    interval: CHECK_INTERVAL
+    interval: CHECK_INTERVAL,
+    environment: process.env.VERCEL ? 'serverless' : 'traditional'
   };
 }
 
