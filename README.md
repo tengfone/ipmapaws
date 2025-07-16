@@ -168,6 +168,7 @@ All endpoints include standard rate limiting headers:
 ### Data & API
 
 - **SWR**: Client-side data fetching with caching
+- **Vercel Blob**: Persistent storage for cache with S3-backed durability
 - **Custom Rate Limiting**: IP-based with multiple tier system
 - **Background Sync**: Non-blocking data updates
 - **OpenAPI 3.0**: Complete API specification
@@ -219,6 +220,11 @@ IPMapAWS/
 ```bash
 # Optional: Custom base URL (defaults to Vercel URL)
 NEXT_PUBLIC_BASE_URL=https://yourdomain.com
+
+# Required for Vercel Blob storage (auto-configured on Vercel)
+# When deploying to Vercel, this is automatically provided
+# For local development, you may need to set this manually
+BLOB_READ_WRITE_TOKEN=your_blob_token_here
 ```
 
 ### Rate Limiting
@@ -279,6 +285,7 @@ npm run test:coverage
 
 ### Data Integrity
 
+- **Persistent Caching**: Vercel Blob storage ensures cache survives deployments and function restarts
 - **Automatic Validation**: Response structure verification
 - **Fallback Handling**: Graceful degradation during AWS outages
 - **Background Updates**: Non-blocking data refresh
@@ -295,8 +302,9 @@ npm run test:coverage
 ### Vercel (Recommended)
 
 1. Connect your GitHub repository to Vercel
-2. Configure environment variables (optional)
-3. Deploy automatically on push to main branch
+2. Vercel Blob storage is automatically configured
+3. Configure additional environment variables (optional)
+4. Deploy automatically on push to main branch
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftengfone%2Fipmapaws)
 
