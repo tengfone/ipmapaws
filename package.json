@@ -22,7 +22,7 @@
     "clipboard-copy": "^4.0.1",
     "clsx": "^2.0.0",
     "lucide-react": "^0.294.0",
-    "next": "15.4.1",
+    "next": "15.5.28",
     "papaparse": "^5.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -44,12 +44,12 @@
     "@typescript-eslint/parser": "^6.13.0",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.55.0",
-    "eslint-config-next": "15.4.1",
+    "eslint-config-next": "15.5.28",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.0.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "postcss": "^8.4.32",
+    "postcss": "^8.5.31",
     "prettier": "^3.1.0",
     "tailwindcss": "^3.3.6",
     "tailwindcss-animate": "^1.0.7"
@@ -70,5 +70,10 @@
     "nextjs",
     "typescript",
     "cidr"
-  ]
+  ],
+  "overrides": {
+    "undici": "^6.29.1",
+    "postcss": "$postcss",
+    "postcss-selector-parser": "^7.1.7"
+  }
 }
