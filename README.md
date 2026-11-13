@@ -1,36 +1,24 @@
-# IPMapAWS 🗺️
+# IPMapAWS
 
-A comprehensive Next.js web application and REST API for exploring AWS IP address ranges. Built for network engineers, infrastructure teams, and developers who need programmatic access to AWS IP data.
+Paste an IP address or CIDR and see which published AWS prefix contains it.
+
+```bash
+curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/lookup?q=3.5.16.1"
+```
+
+A hit returns every published prefix that contains the query (`prefix`, `region`, `service`, `network_border_group`, and `ipv4` or `ipv6`). A single address matches when it falls inside a prefix. A CIDR matches only when the whole range is inside the prefix. If nothing contains it, `found` is `false` and `matches` is empty: the address is not in the published AWS ranges.
+
+The same lookup is the first box on [https://ipmapaws.vercel.app](https://ipmapaws.vercel.app).
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftengfone%2Fipmapaws)
 
 ## ✨ Features
 
-### 🌐 Web Interface
-
-- **Advanced Search & Filtering**: Filter by region, service, CIDR notation, IPv4/IPv6
-- **Real-time Data**: Automatically syncs with AWS official IP ranges
-- **Interactive Tables**: Sortable, paginated results with copy-to-clipboard
-- **CSV Export**: Export filtered results for external analysis
-- **Responsive Design**: Mobile-friendly interface built with Tailwind CSS
-- **SEO Optimized**: Static generation for all region/service combinations
-- **Dark Mode**: Automatic theme detection and switching
-
-### 🚀 Public REST API
-
-- **3 Comprehensive Endpoints**: Raw data, advanced search, and export
-- **Rate Limited**: Fair usage policies with different limits per endpoint
-- **OpenAPI 3.0**: Complete specification with interactive documentation
-- **No Authentication**: Free public access with transparent rate limits
-- **JSON Responses**: Clean, consistent API responses
-- **CORS Enabled**: Ready for client-side integration
-
-### 📊 Data & Performance
-
-- **Background Sync**: Automatic data updates without blocking requests
-- **Smart Caching**: ISR (Incremental Static Regeneration) for optimal performance
-- **Real-time Stats**: Live data freshness indicators
-- **High Availability**: Cached responses ensure uptime during AWS updates
+- **Prefix lookup**: IPv4 and IPv6 addresses or CIDRs, including compressed IPv6
+- **Search and filter**: region, service, and address family, with sortable pages
+- **Export**: download the filtered set as CSV from the UI or JSON from the API
+- **Public API**: lookup, raw data, search, and export, with OpenAPI docs and no auth
+- **Fresh data**: background sync from Amazon's published IP ranges
 
 ## 🚀 Quick Start
 
@@ -73,6 +61,53 @@ npm run start
 - **Documentation**: `https://ipmapaws.vercel.app/docs`
 
 ### Endpoints
+
+#### 🎯 GET `/api/aws-ip-ranges/lookup`
+
+Find every published prefix that contains an IP address or CIDR.
+
+**Rate Limit**: 10 requests/minute
+
+**Parameters**:
+
+- `q` (string, required): IPv4 address, IPv6 address, IPv4 CIDR, or IPv6 CIDR
+
+```bash
+curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/lookup?q=3.5.16.1"
+curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/lookup?q=2600:1ff8:2c00::1"
+```
+
+```json
+{
+  "query": "3.5.16.1",
+  "found": true,
+  "matches": [
+    {
+      "prefix": "3.5.0.0/19",
+      "region": "us-east-1",
+      "service": "AMAZON",
+      "network_border_group": "us-east-1",
+      "type": "ipv4"
+    },
+    {
+      "prefix": "3.5.0.0/19",
+      "region": "us-east-1",
+      "service": "S3",
+      "network_border_group": "us-east-1",
+      "type": "ipv4"
+    },
+    {
+      "prefix": "3.5.0.0/19",
+      "region": "us-east-1",
+      "service": "EC2",
+      "network_border_group": "us-east-1",
+      "type": "ipv4"
+    }
+  ]
+}
+```
+
+An address outside the published set returns `"found": false` and `"matches": []`. A query that is not an IP or CIDR returns HTTP 400.
 
 #### 📥 GET `/api/aws-ip-ranges`
 
@@ -232,7 +267,7 @@ BLOB_READ_WRITE_TOKEN=your_blob_token_here
 Rate limits are configurable in `src/lib/rate-limit.ts`:
 
 - **API General**: 50 requests/hour
-- **Search**: 10 requests/minute
+- **Lookup and search**: 10 requests/minute
 - **Export**: 5 requests/10 minutes
 
 ### Background Sync

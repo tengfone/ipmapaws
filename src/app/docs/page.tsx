@@ -23,6 +23,16 @@ interface ApiEndpoint {
 const API_ENDPOINTS: ApiEndpoint[] = [
   {
     method: 'GET',
+    path: '/api/aws-ip-ranges/lookup',
+    summary: 'Find the AWS prefix that contains an IP or CIDR',
+    description: 'Returns every published AWS prefix that contains the address or CIDR. A single address matches when it falls inside a prefix. A CIDR matches only when the whole range is inside a prefix. An empty match list means the query is not in the published AWS ranges.',
+    parameters: [
+      { name: 'q', description: 'IPv4 address, IPv6 address, or CIDR prefix', required: true, type: 'string', example: '3.5.16.1' },
+    ],
+    rateLimit: '10 requests/minute',
+  },
+  {
+    method: 'GET',
     path: '/api/aws-ip-ranges',
     summary: 'Get all AWS IP ranges',
     description: 'Returns the complete AWS IP ranges dataset in the original format from Amazon',
@@ -83,6 +93,10 @@ interface ClientRateLimit {
 
 // Client-side rate limiting configuration per endpoint
 const CLIENT_RATE_LIMITS: Record<string, { cooldown: number; message: string }> = {
+  '/api/aws-ip-ranges/lookup': {
+    cooldown: 10000,
+    message: 'Please wait 10 seconds between lookup requests (Only Applicable to UI)'
+  },
   '/api/aws-ip-ranges': { 
     cooldown: 10000, // 10 seconds between requests
     message: 'Please wait 10 seconds between requests to the main API (Only Applicable to UI)'
@@ -400,7 +414,7 @@ export default function ApiDocsPage() {
                 <h3 className="font-semibold">Rate Limited</h3>
               </div>
               <p className="text-sm text-muted-foreground">
-                50 requests/hour for general API, 10/min for search, 5/10min for exports to ensure fair usage.
+                50 requests/hour for general API, 10/min for lookup and search, 5/10min for exports to ensure fair usage.
               </p>
             </div>
             

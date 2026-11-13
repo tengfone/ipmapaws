@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useMemo, startTransition } from 'react';
 import { FilterControls } from '@/components/FilterControls';
+import { PrefixLookup } from '@/components/PrefixLookup';
 import { PrefixTable } from '@/components/PrefixTable';
 import { ExportSummary } from '@/components/ExportButton';
 import { DataStatus } from '@/components/DataStatus';
@@ -137,6 +138,8 @@ export default function HomePage() {
         )}
       </div>
 
+      <PrefixLookup />
+
       {/* API Announcement */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -186,8 +189,8 @@ export default function HomePage() {
         <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div className="text-center">
-              <div className="font-medium text-blue-900 dark:text-blue-100">3 Endpoints</div>
-              <div className="text-blue-600 dark:text-blue-400">Search, Export, Raw data</div>
+              <div className="font-medium text-blue-900 dark:text-blue-100">4 Endpoints</div>
+              <div className="text-blue-600 dark:text-blue-400">Lookup, Search, Export, Raw</div>
             </div>
             <div className="text-center">
               <div className="font-medium text-blue-900 dark:text-blue-100">OpenAPI 3.0</div>
@@ -256,7 +259,9 @@ export default function HomePage() {
             <h3 className="font-medium text-white">Quick API Example</h3>
           </div>
           <div className="text-green-400 font-mono text-sm space-y-2">
-            <div className="text-gray-400"># Get EC2 IP ranges in us-east-1</div>
+            <div className="text-gray-400"># Which published prefix contains this address?</div>
+            <div>curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/lookup?q=3.5.16.1"</div>
+            <div className="text-gray-400 mt-4"># Get EC2 IP ranges in us-east-1</div>
             <div>curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/search?regions=us-east-1&services=EC2"</div>
             <div className="text-gray-400 mt-4"># Export all S3 ranges as JSON</div>
             <div>curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/export?services=S3"</div>

@@ -5,7 +5,7 @@ const swaggerDefinition = {
   info: {
     title: 'IPMapAWS API',
     version: '1.0.0',
-    description: 'A comprehensive API for accessing AWS IP ranges with search, filtering, and export capabilities',
+    description: 'Look up which published AWS prefix contains an IP or CIDR, and search, filter, or export AWS IP ranges',
     contact: {
       name: 'IPMapAWS',
       url: 'https://ipmapaws.vercel.app',
@@ -108,6 +108,27 @@ const swaggerDefinition = {
           },
         },
       },
+      LookupResponse: {
+        type: 'object',
+        required: ['query', 'found', 'matches'],
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Normalized IP address or network CIDR from the query',
+            example: '3.5.16.1',
+          },
+          found: {
+            type: 'boolean',
+            description: 'True when at least one published prefix contains the query',
+            example: true,
+          },
+          matches: {
+            type: 'array',
+            description: 'Published prefixes that contain the query. Empty when found is false.',
+            items: { $ref: '#/components/schemas/AWSIPRange' },
+          },
+        },
+      },
       SearchResponse: {
         type: 'object',
         properties: {
@@ -192,6 +213,16 @@ const swaggerDefinition = {
       },
     },
     parameters: {
+      LookupQuery: {
+        name: 'q',
+        in: 'query',
+        description: 'IPv4 address, IPv6 address, IPv4 CIDR, or IPv6 CIDR to look up',
+        required: true,
+        schema: {
+          type: 'string',
+          example: '3.5.16.1',
+        },
+      },
       Page: {
         name: 'page',
         in: 'query',
