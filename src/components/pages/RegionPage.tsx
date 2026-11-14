@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState, useMemo, useCallback, startTransition } from 'react';
 import { FilterControls } from '@/components/FilterControls';
 import { PrefixTable } from '@/components/PrefixTable';
@@ -119,12 +120,12 @@ export default function RegionPage({ region }: RegionPageProps) {
       {/* Header Section */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center space-x-2">
-          <a 
-            href="/" 
+          <Link
+            href="/"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             IPMapAWS
-          </a>
+          </Link>
           <span className="text-muted-foreground">/</span>
           <span className="text-muted-foreground">regions</span>
           <span className="text-muted-foreground">/</span>

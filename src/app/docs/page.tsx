@@ -112,7 +112,7 @@ const CLIENT_RATE_LIMITS: Record<string, { cooldown: number; message: string }> 
 };
 
 export default function ApiDocsPage() {
-  const [spec, setSpec] = useState(null);
+  const [, setSpec] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export default function ApiDocsPage() {
         setSpec(data);
         setIsLoading(false);
       })
-      .catch((err) => {
+      .catch(() => {
         setError('Failed to load API specification');
         setIsLoading(false);
       });
@@ -424,7 +424,7 @@ export default function ApiDocsPage() {
                 <h3 className="font-semibold">Real-time Data</h3>
               </div>
               <p className="text-sm text-muted-foreground">
-                Always up-to-date AWS IP ranges sourced directly from Amazon's official endpoint.
+                Always up-to-date AWS IP ranges sourced directly from Amazon&apos;s official endpoint.
               </p>
             </div>
           </div>

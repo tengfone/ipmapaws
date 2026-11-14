@@ -31,7 +31,7 @@ export default function HomePage() {
   const itemsPerPage = 50;
 
   // Data fetching - use metadata hook for regions/services/stats and search hook for results
-  const { regions, services, stats, isLoading: metadataLoading, error: metadataError } = useAWSIPRanges();
+  const { regions, services, stats, error: metadataError } = useAWSIPRanges();
   
   // Server-side search with pagination
   const { 
@@ -95,7 +95,6 @@ export default function HomePage() {
 
   // Handle errors
   const error = metadataError || searchError;
-  const isLoading = metadataLoading;
 
   if (error) {
     return (
@@ -260,11 +259,11 @@ export default function HomePage() {
           </div>
           <div className="text-green-400 font-mono text-sm space-y-2">
             <div className="text-gray-400"># Which published prefix contains this address?</div>
-            <div>curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/lookup?q=3.5.16.1"</div>
+            <div>{'curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/lookup?q=3.5.16.1"'}</div>
             <div className="text-gray-400 mt-4"># Get EC2 IP ranges in us-east-1</div>
-            <div>curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/search?regions=us-east-1&services=EC2"</div>
+            <div>{'curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/search?regions=us-east-1&services=EC2"'}</div>
             <div className="text-gray-400 mt-4"># Export all S3 ranges as JSON</div>
-            <div>curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/export?services=S3"</div>
+            <div>{'curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/export?services=S3"'}</div>
           </div>
           <div className="mt-4">
             <a
@@ -281,7 +280,7 @@ export default function HomePage() {
           <h3 className="font-medium text-foreground mb-2">About This Data</h3>
           <p className="mb-2">
             This tool displays IP address ranges used by AWS services. The data is fetched directly from 
-            Amazon's official IP ranges endpoint and is updated automatically when AWS publishes changes.
+            Amazon&apos;s official IP ranges endpoint and is updated automatically when AWS publishes changes.
           </p>
           <p className="mb-3">
             Use this information for firewall configuration, security group rules, and network monitoring. 

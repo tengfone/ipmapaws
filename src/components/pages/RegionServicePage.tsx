@@ -1,7 +1,7 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState, useMemo, useCallback, startTransition } from 'react';
-import { FilterControls } from '@/components/FilterControls';
 import { PrefixTable } from '@/components/PrefixTable';
 import { ExportSummary } from '@/components/ExportButton';
 import { DataStatus } from '@/components/DataStatus';
@@ -125,12 +125,12 @@ export default function RegionServicePage({ region, service }: RegionServicePage
       {/* Header Section */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center space-x-2 text-sm">
-          <a 
-            href="/" 
+          <Link
+            href="/"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             IPMapAWS
-          </a>
+          </Link>
           <span className="text-muted-foreground">/</span>
           <a 
             href={`/regions/${region}`}
@@ -292,7 +292,7 @@ export default function RegionServicePage({ region, service }: RegionServicePage
           </div>
           <h3 className="text-lg font-medium text-foreground mb-2">No IP ranges found</h3>
           <p className="text-muted-foreground mb-4">
-            {service} service doesn't have any IP ranges in the {region} region.
+            {service} service doesn&apos;t have any IP ranges in the {region} region.
           </p>
           <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
             <a
@@ -301,12 +301,12 @@ export default function RegionServicePage({ region, service }: RegionServicePage
             >
               View all services in {region}
             </a>
-            <a
+            <Link
               href="/"
               className="px-4 py-2 border border-input rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground"
             >
               Back to search
-            </a>
+            </Link>
           </div>
         </div>
       )}

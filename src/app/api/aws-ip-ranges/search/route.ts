@@ -4,18 +4,6 @@ import { transformAWSIPRanges, filterPrefixes, sortPrefixes } from '@/lib/api';
 import { CombinedPrefix, SortField, SortDirection } from '@/types';
 import { searchRateLimit } from '@/lib/rate-limit';
 
-interface SearchParams {
-  page?: string;
-  limit?: string;
-  regions?: string;
-  services?: string;
-  searchTerm?: string;
-  includeIPv4?: string;
-  includeIPv6?: string;
-  sortField?: SortField;
-  sortDirection?: SortDirection;
-}
-
 interface SearchResponse {
   data: CombinedPrefix[];
   pagination: {

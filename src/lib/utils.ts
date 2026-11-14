@@ -84,6 +84,7 @@ export function debounce<T extends any[]>(
 export function formatDate(dateString: string): string {
   try {
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
