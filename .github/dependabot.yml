@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      # One PR a week for routine minor/patch bumps; majors and security
+      # fixes still get their own PRs.
+      minor-and-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
+    labels: [dependencies]
