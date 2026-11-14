@@ -21,6 +21,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://ipmapaws.vercel.ap
 export async function GET() {
   const robots = `User-agent: *
 Allow: /
+Disallow: /api/
 
 # Sitemap
 Sitemap: ${BASE_URL}/sitemap.xml

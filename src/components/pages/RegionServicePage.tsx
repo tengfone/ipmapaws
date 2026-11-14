@@ -6,7 +6,7 @@ import { PrefixTable } from '@/components/PrefixTable';
 import { ExportSummary } from '@/components/ExportButton';
 import { DataStatus } from '@/components/DataStatus';
 import { usePagination } from '@/components/ui/pagination';
-import { useFilteredIPRanges } from '@/hooks/useAWSIPRanges';
+import { useFilteredIPRanges, InitialFilteredData } from '@/hooks/useAWSIPRanges';
 import { FilterOptions, SortField, SortDirection } from '@/types';
 import { filterPrefixes, sortPrefixes } from '@/lib/api';
 import { copyToClipboard, debounce } from '@/lib/utils';
@@ -14,10 +14,11 @@ import { copyToClipboard, debounce } from '@/lib/utils';
 interface RegionServicePageProps {
   region: string;
   service: string;
+  initialData?: InitialFilteredData;
 }
 
-export default function RegionServicePage({ region, service }: RegionServicePageProps) {
-  const { prefixes, count, lastUpdated, isLoading, error } = useFilteredIPRanges(region, service);
+export default function RegionServicePage({ region, service, initialData }: RegionServicePageProps) {
+  const { prefixes, count, lastUpdated, isLoading, error } = useFilteredIPRanges(region, service, initialData);
   
   // Separate state for search input to avoid lag
   const [searchInput, setSearchInput] = useState('');
@@ -63,6 +64,12 @@ export default function RegionServicePage({ region, service }: RegionServicePage
     setCurrentPage,
     itemsPerPage,
   } = usePagination(filteredAndSortedPrefixes.length, 50);
+
+  // PrefixTable renders exactly the rows it is given, so pass one page.
+  const pagedPrefixes = useMemo(
+    () => filteredAndSortedPrefixes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+    [filteredAndSortedPrefixes, currentPage, itemsPerPage],
+  );
 
   // Event handlers
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
@@ -241,7 +248,7 @@ export default function RegionServicePage({ region, service }: RegionServicePage
 
           {/* Results Table */}
           <PrefixTable
-            prefixes={filteredAndSortedPrefixes}
+            prefixes={pagedPrefixes}
             totalCount={filteredAndSortedPrefixes.length}
             loading={isLoading}
             sortField={sortField}

@@ -34,34 +34,17 @@ export const metadata: Metadata = {
     siteName: 'IPMapAWS',
     title: 'IPMapAWS - AWS IP Ranges Explorer',
     description: 'Search and filter AWS IP prefixes by region and service',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'IPMapAWS - AWS IP Ranges Explorer',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'IPMapAWS - AWS IP Ranges Explorer',
     description: 'Search and filter AWS IP prefixes by region and service',
-    images: ['/og-image.png'],
-    creator: '@ipmapaws',
   },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
-  },
-  manifest: '/site.webmanifest',
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({

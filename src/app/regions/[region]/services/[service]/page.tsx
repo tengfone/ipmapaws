@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import RegionServicePage from '@/components/pages/RegionServicePage';
-import { extractRegions, extractServices } from '@/lib/api';
+import { extractRegions, extractServices, transformAWSIPRanges } from '@/lib/api';
 import { getAWSIPRangesServer } from '@/lib/server-data';
 
 interface Props {
@@ -114,31 +114,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// Re-render with fresh AWS data at most once an hour.
+export const revalidate = 3600;
+
 export default async function Page({ params }: Props) {
   const { region: encodedRegion, service: encodedService } = await params;
   const region = decodeURIComponent(encodedRegion);
   const service = decodeURIComponent(encodedService);
-  
-  try {
-    const data = await getAWSIPRangesServer();
-    const regions = extractRegions(data);
-    const services = extractServices(data);
-    
-    if (!regions.includes(region) || !services.includes(service)) {
-      notFound();
-    }
 
-    // Verify this region/service combination exists
-    const hasIPv4 = data.prefixes.some(p => p.region === region && p.service === service);
-    const hasIPv6 = data.ipv6_prefixes.some(p => p.region === region && p.service === service);
-    
-    if (!hasIPv4 && !hasIPv6) {
-      notFound();
-    }
-  } catch (error) {
-    console.error('Error loading region/service page:', error);
-    throw error;
+  const data = await getAWSIPRangesServer();
+  if (!extractRegions(data).includes(region) || !extractServices(data).includes(service)) {
+    notFound();
   }
 
-  return <RegionServicePage region={region} service={service} />;
-} 
+  const prefixes = transformAWSIPRanges(data).filter(
+    (p) => p.region === region && p.service === service,
+  );
+  if (prefixes.length === 0) {
+    notFound();
+  }
+
+  return (
+    <RegionServicePage
+      region={region}
+      service={service}
+      initialData={{ prefixes, lastUpdated: data.createDate }}
+    />
+  );
+}

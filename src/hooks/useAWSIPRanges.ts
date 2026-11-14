@@ -38,9 +38,9 @@ interface UseAWSIPRangesSearchReturn {
  * Custom hook for fetching AWS IP ranges with SWR caching
  * This is used for metadata (regions, services, stats) and basic data
  */
-export function useAWSIPRanges(): UseAWSIPRangesReturn {
+export function useAWSIPRanges(enabled = true): UseAWSIPRangesReturn {
   const { data, error, isLoading, mutate } = useSWR<AWSIPRanges>(
-    'aws-ip-ranges',
+    enabled ? 'aws-ip-ranges' : null,
     fetchAWSIPRanges,
     {
       // Revalidate every 24 hours
@@ -177,20 +177,36 @@ export function useAWSIPRangesSearch(
  * This still uses the client-side approach for region/service specific pages
  * since the filtering is simpler and already quite fast
  */
-export function useFilteredIPRanges(region?: string, service?: string) {
-  const { combinedPrefixes, stats, isLoading, error } = useAWSIPRanges();
+export interface InitialFilteredData {
+  prefixes: CombinedPrefix[];
+  lastUpdated?: string;
+}
 
-  const filteredPrefixes = combinedPrefixes.filter((prefix) => {
-    if (region && prefix.region !== region) return false;
-    if (service && prefix.service !== service) return false;
-    return true;
-  });
+/**
+ * Prefixes for one region (and optionally one service).
+ *
+ * Region and service pages pass the server-rendered slice as `initial`, so
+ * the table is in the HTML for search engines and the browser never has to
+ * download the full 3.6 MB dataset. Without it, the full dataset is fetched
+ * and filtered on the client.
+ */
+export function useFilteredIPRanges(region?: string, service?: string, initial?: InitialFilteredData) {
+  const { combinedPrefixes, stats, isLoading, error } = useAWSIPRanges(!initial);
+
+  const filteredPrefixes = useMemo(() => {
+    if (initial) return initial.prefixes;
+    return combinedPrefixes.filter((prefix) => {
+      if (region && prefix.region !== region) return false;
+      if (service && prefix.service !== service) return false;
+      return true;
+    });
+  }, [initial, combinedPrefixes, region, service]);
 
   return {
     prefixes: filteredPrefixes,
     count: filteredPrefixes.length,
-    lastUpdated: stats?.lastUpdated,
-    isLoading,
-    error,
+    lastUpdated: initial ? initial.lastUpdated : stats?.lastUpdated,
+    isLoading: initial ? false : isLoading,
+    error: initial ? undefined : error,
   };
-} 
+}

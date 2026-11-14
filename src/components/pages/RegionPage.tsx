@@ -7,17 +7,18 @@ import { PrefixTable } from '@/components/PrefixTable';
 import { ExportSummary } from '@/components/ExportButton';
 import { DataStatus } from '@/components/DataStatus';
 import { usePagination } from '@/components/ui/pagination';
-import { useFilteredIPRanges } from '@/hooks/useAWSIPRanges';
+import { useFilteredIPRanges, InitialFilteredData } from '@/hooks/useAWSIPRanges';
 import { FilterOptions, SortField, SortDirection } from '@/types';
 import { filterPrefixes, sortPrefixes } from '@/lib/api';
 import { copyToClipboard, debounce } from '@/lib/utils';
 
 interface RegionPageProps {
   region: string;
+  initialData?: InitialFilteredData;
 }
 
-export default function RegionPage({ region }: RegionPageProps) {
-  const { prefixes, count, lastUpdated, isLoading, error } = useFilteredIPRanges(region);
+export default function RegionPage({ region, initialData }: RegionPageProps) {
+  const { prefixes, count, lastUpdated, isLoading, error } = useFilteredIPRanges(region, undefined, initialData);
   
   // State for additional filtering within the region
   const [filters, setFilters] = useState<FilterOptions>({
@@ -60,6 +61,12 @@ export default function RegionPage({ region }: RegionPageProps) {
     setCurrentPage,
     itemsPerPage,
   } = usePagination(filteredAndSortedPrefixes.length, 50);
+
+  // PrefixTable renders exactly the rows it is given, so pass one page.
+  const pagedPrefixes = useMemo(
+    () => filteredAndSortedPrefixes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+    [filteredAndSortedPrefixes, currentPage, itemsPerPage],
+  );
 
   // Event handlers
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
@@ -180,7 +187,7 @@ export default function RegionPage({ region }: RegionPageProps) {
 
       {/* Results Table */}
       <PrefixTable
-        prefixes={filteredAndSortedPrefixes}
+        prefixes={pagedPrefixes}
         totalCount={filteredAndSortedPrefixes.length}
         loading={isLoading}
         sortField={sortField}

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import RegionPage from '@/components/pages/RegionPage';
-import { extractRegions } from '@/lib/api';
+import { extractRegions, transformAWSIPRanges } from '@/lib/api';
 import { getAWSIPRangesServer } from '@/lib/server-data';
 
 interface Props {
@@ -68,21 +68,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+// Re-render with fresh AWS data at most once an hour.
+export const revalidate = 3600;
+
 export default async function Page({ params }: Props) {
   const { region: encodedRegion } = await params;
   const region = decodeURIComponent(encodedRegion);
-  
-  try {
-    const data = await getAWSIPRangesServer();
-    const regions = extractRegions(data);
-    
-    if (!regions.includes(region)) {
-      notFound();
-    }
-  } catch (error) {
-    console.error('Error loading region page:', error);
-    throw error;
+
+  const data = await getAWSIPRangesServer();
+  if (!extractRegions(data).includes(region)) {
+    notFound();
   }
 
-  return <RegionPage region={region} />;
-} 
+  const prefixes = transformAWSIPRanges(data).filter((p) => p.region === region);
+
+  return <RegionPage region={region} initialData={{ prefixes, lastUpdated: data.createDate }} />;
+}

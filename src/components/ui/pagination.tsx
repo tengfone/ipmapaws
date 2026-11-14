@@ -81,6 +81,7 @@ export function Pagination({
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
+          aria-label="Previous page"
           disabled={currentPage === 1}
           className="h-8 w-8 p-0"
         >
@@ -107,6 +108,8 @@ export function Pagination({
                 variant={isCurrentPage ? "default" : "outline"}
                 size="sm"
                 onClick={() => onPageChange(pageNumber)}
+                aria-label={`Page ${pageNumber}`}
+                aria-current={isCurrentPage ? 'page' : undefined}
                 className={cn(
                   "h-8 w-8 p-0",
                   isCurrentPage && "pointer-events-none"
@@ -123,6 +126,7 @@ export function Pagination({
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
+          aria-label="Next page"
           disabled={currentPage === totalPages}
           className="h-8 w-8 p-0"
         >
