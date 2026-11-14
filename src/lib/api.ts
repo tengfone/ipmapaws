@@ -21,7 +21,6 @@ export async function fetchAWSIPRanges(): Promise<AWSIPRanges> {
     const response = await fetch(apiUrl, {
       headers: {
         'Accept': 'application/json',
-        'X-Internal-Request': 'true', // Mark as internal website request to bypass rate limiting
       },
       // Only add cache options for server-side requests
       ...(typeof window === 'undefined' && {

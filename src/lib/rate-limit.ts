@@ -1,12 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * Fixed-window, per-IP rate limiting for the public API.
+ *
+ * Limits live in memory, so on a serverless platform (Vercel) each function
+ * instance counts on its own and a cold start resets the count. Treat these
+ * limits as best-effort abuse protection, not a guarantee. For hard limits,
+ * use a shared store (e.g. Upstash Redis / Vercel KV) or the platform's
+ * firewall rate limiting.
+ *
+ * No request header can switch rate limiting off. Requests that look like
+ * they come from this site's own pages (Sec-Fetch-Site / Referer) get a
+ * higher, but still finite, per-IP limit. Those headers are client-controlled,
+ * so the worst a spoofing client gets is that higher limit.
+ */
+
 interface RateLimitOptions {
-  windowMs: number; // Time window in milliseconds
-  maxRequests: number; // Max requests per window
-  message?: string; // Custom error message
-  skipSuccessfulRequests?: boolean; // Don't count successful requests
-  skipFailedRequests?: boolean; // Don't count failed requests
-  bypassInternal?: boolean; // Bypass rate limiting for internal website requests
+  /** Namespace for this limiter's counters, so endpoints don't share budgets. */
+  name: string;
+  /** Window length in milliseconds. */
+  windowMs: number;
+  /** Requests allowed per IP per window. */
+  maxRequests: number;
+  /**
+   * Requests allowed per IP per window when the request looks like it comes
+   * from this site's own pages. Defaults to maxRequests.
+   */
+  sameSiteMaxRequests?: number;
+  /** Message returned in the 429 body. */
+  message: string;
 }
 
 interface RequestRecord {
@@ -14,221 +36,193 @@ interface RequestRecord {
   resetTime: number;
 }
 
-// In-memory store for rate limiting
-// In production, you might want to use Redis or another persistent store
-const store = new Map<string, RequestRecord>();
+export type RateLimitedHandler = (
+  request: NextRequest,
+  handler: () => Promise<NextResponse>
+) => Promise<NextResponse>;
 
-// Clean up expired entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  const entries = Array.from(store.entries());
-  for (const [key, record] of entries) {
-    if (now > record.resetTime) {
-      store.delete(key);
-    }
+/** Upper bound on tracked clients per limiter, to bound memory. */
+const MAX_TRACKED_CLIENTS = 10_000;
+
+const FIRST_PARTY_HOSTS = new Set(
+  [
+    'ipmapaws.vercel.app',
+    hostOf(process.env.NEXT_PUBLIC_BASE_URL),
+    process.env.VERCEL_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  ].filter((host): host is string => Boolean(host))
+);
+
+function hostOf(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    return new URL(url).host;
+  } catch {
+    return undefined;
   }
-}, 5 * 60 * 1000);
-
-/**
- * Determines if a request is from the internal website
- * This checks various indicators to distinguish internal vs external API usage
- */
-function isInternalRequest(request: NextRequest): boolean {
-  // Check for internal bypass header (we'll add this to our internal requests)
-  const internalHeader = request.headers.get('x-internal-request');
-  if (internalHeader === 'true') {
-    return true;
-  }
-
-  // Check referer header - internal requests should come from our domain
-  const referer = request.headers.get('referer');
-  if (referer) {
-    try {
-      const refererUrl = new URL(referer);
-      const requestUrl = new URL(request.url);
-      
-      // If referer is from the same domain, it's likely an internal request
-      if (refererUrl.origin === requestUrl.origin) {
-        return true;
-      }
-
-      // Check for common development/production domains
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/https?:\/\//, '');
-      const internalDomains = [
-        'localhost',
-        '127.0.0.1',
-        'ipmapaws.vercel.app',
-        ...(baseUrl ? [baseUrl] : [])
-      ];
-
-      if (internalDomains.some(domain => refererUrl.hostname.includes(domain))) {
-        return true;
-      }
-    } catch (e) {
-      // Invalid referer URL, continue to other checks
-    }
-  }
-
-  // Check User-Agent for Next.js internal requests
-  const userAgent = request.headers.get('user-agent') || '';
-  if (userAgent.includes('Next.js') || userAgent.includes('node-fetch')) {
-    return true;
-  }
-
-  // If request has no referer and no external indicators, might be internal
-  if (!referer && !userAgent.includes('curl') && !userAgent.includes('Postman')) {
-    return true;
-  }
-
-  return false;
 }
 
-export function createRateLimit(options: RateLimitOptions) {
-  const {
-    windowMs,
-    maxRequests,
-    message = 'Too many requests, please try again later.',
-    skipSuccessfulRequests = false,
-    skipFailedRequests = false,
-    bypassInternal = true, // Default to bypassing internal requests
-  } = options;
+/**
+ * True when the browser says the request came from one of this site's pages.
+ * Used only to pick the higher limit, never to skip limiting.
+ */
+export function isSameSiteRequest(request: NextRequest): boolean {
+  const fetchSite = request.headers.get('sec-fetch-site');
+  if (fetchSite === 'same-origin') return true;
 
-  return async function rateLimitMiddleware(
-    request: NextRequest,
-    handler: () => Promise<NextResponse>
-  ): Promise<NextResponse> {
-    // Check if this is an internal request and should bypass rate limiting
-    if (bypassInternal && isInternalRequest(request)) {
-      // Skip rate limiting for internal requests but still process normally
-      return handler();
+  const referer = request.headers.get('referer');
+  if (!referer) return false;
+  try {
+    const refererUrl = new URL(referer);
+    if (refererUrl.origin === new URL(request.url).origin) return true;
+    return FIRST_PARTY_HOSTS.has(refererUrl.host);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Client IP. On Vercel, x-real-ip and x-forwarded-for are set by the platform
+ * and cannot be spoofed by the client. Elsewhere they can, so put the app
+ * behind a proxy that overwrites them.
+ */
+export function getClientId(request: NextRequest): string {
+  const realIp = request.headers.get('x-real-ip')?.trim();
+  if (realIp) return realIp;
+
+  const forwarded = request.headers.get('x-forwarded-for');
+  const first = forwarded?.split(',')[0]?.trim();
+  if (first) return first;
+
+  return 'unknown';
+}
+
+export function createRateLimit(options: RateLimitOptions): RateLimitedHandler {
+  const { name, windowMs, maxRequests, message } = options;
+  const sameSiteMaxRequests = options.sameSiteMaxRequests ?? maxRequests;
+  const store = new Map<string, RequestRecord>();
+  let lastSweep = Date.now();
+
+  function sweep(now: number) {
+    lastSweep = now;
+    store.forEach((record, key) => {
+      if (now >= record.resetTime) store.delete(key);
+    });
+    // Still too many live clients: drop the oldest windows first.
+    if (store.size > MAX_TRACKED_CLIENTS) {
+      const excess = store.size - MAX_TRACKED_CLIENTS;
+      const keys = Array.from(store.keys()).slice(0, excess);
+      keys.forEach((key) => store.delete(key));
+    }
+  }
+
+  return async function rateLimit(request, handler) {
+    const now = Date.now();
+    if (now - lastSweep >= windowMs || store.size > MAX_TRACKED_CLIENTS) {
+      sweep(now);
     }
 
-    // Get client identifier (IP address)
     const clientId = getClientId(request);
-    const now = Date.now();
-    
-    // Get or create record for this client
+    const limit = isSameSiteRequest(request)
+      ? sameSiteMaxRequests
+      : maxRequests;
+
     let record = store.get(clientId);
-    
-    if (!record || now > record.resetTime) {
-      // Create new record or reset expired one
-      record = {
-        count: 0,
-        resetTime: now + windowMs,
-      };
+    if (!record || now >= record.resetTime) {
+      record = { count: 0, resetTime: now + windowMs };
       store.set(clientId, record);
     }
 
-    // Check if limit exceeded
-    if (record.count >= maxRequests) {
-      const resetTimeSeconds = Math.ceil((record.resetTime - now) / 1000);
-      
+    const resetSeconds = Math.ceil(record.resetTime / 1000).toString();
+    const windowSeconds = Math.round(windowMs / 1000).toString();
+
+    if (record.count >= limit) {
+      const retryAfter = Math.max(
+        1,
+        Math.ceil((record.resetTime - now) / 1000)
+      );
       return NextResponse.json(
         {
           error: 'Rate limit exceeded',
           message,
-          retryAfter: resetTimeSeconds,
-          limit: maxRequests,
+          retryAfter,
+          limit,
           windowMs,
+          timestamp: new Date(now).toISOString(),
         },
         {
           status: 429,
           headers: {
-            'Retry-After': resetTimeSeconds.toString(),
-            'X-RateLimit-Limit': maxRequests.toString(),
+            'Retry-After': retryAfter.toString(),
+            'X-RateLimit-Limit': limit.toString(),
             'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': Math.ceil(record.resetTime / 1000).toString(),
-            'X-RateLimit-Window': (windowMs / 1000).toString(),
+            'X-RateLimit-Reset': resetSeconds,
+            'X-RateLimit-Window': windowSeconds,
+            'X-RateLimit-Policy': name,
           },
         }
       );
     }
 
-    // Increment counter before processing request
-    if (!skipSuccessfulRequests && !skipFailedRequests) {
-      record.count++;
-    }
+    record.count += 1;
 
-    // Process the request
     let response: NextResponse;
-    let shouldCount = true;
-
     try {
       response = await handler();
-      
-      // Check if we should count this request
-      if (skipSuccessfulRequests && response.status < 400) {
-        shouldCount = false;
-      }
     } catch (error) {
-      // Handle errors
+      console.error(`[rate-limit:${name}] handler threw:`, error);
       response = NextResponse.json(
-        { error: 'Internal server error' },
+        {
+          error: 'Internal server error',
+          message: 'An unexpected error occurred. Please try again later.',
+          timestamp: new Date().toISOString(),
+        },
         { status: 500 }
       );
-      
-      if (skipFailedRequests) {
-        shouldCount = false;
-      }
     }
 
-    // Update counter based on response
-    if ((skipSuccessfulRequests || skipFailedRequests) && !shouldCount) {
-      record.count--;
-    }
-
-    // Add rate limit headers to response
-    const remaining = Math.max(0, maxRequests - record.count);
-    response.headers.set('X-RateLimit-Limit', maxRequests.toString());
-    response.headers.set('X-RateLimit-Remaining', remaining.toString());
-    response.headers.set('X-RateLimit-Reset', Math.ceil(record.resetTime / 1000).toString());
-    response.headers.set('X-RateLimit-Window', (windowMs / 1000).toString());
-
+    response.headers.set('X-RateLimit-Limit', limit.toString());
+    response.headers.set(
+      'X-RateLimit-Remaining',
+      Math.max(0, limit - record.count).toString()
+    );
+    response.headers.set('X-RateLimit-Reset', resetSeconds);
+    response.headers.set('X-RateLimit-Window', windowSeconds);
+    response.headers.set('X-RateLimit-Policy', name);
     return response;
   };
 }
 
-function getClientId(request: NextRequest): string {
-  // Try to get real IP from various headers (for proxies/CDNs)
-  const forwarded = request.headers.get('x-forwarded-for');
-  const realIp = request.headers.get('x-real-ip');
-  const cfConnectingIp = request.headers.get('cf-connecting-ip');
-  
-  if (forwarded) {
-    // x-forwarded-for can contain multiple IPs, take the first one
-    return forwarded.split(',')[0].trim();
-  }
-  
-  if (realIp) {
-    return realIp;
-  }
-  
-  if (cfConnectingIp) {
-    return cfConnectingIp;
-  }
-  
-  // Fallback for cases where IP cannot be determined
-  return 'unknown';
-}
-
-// Pre-configured rate limiters for different API endpoints
+// Pre-configured limiters. Each has its own counters.
 export const apiRateLimit = createRateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  maxRequests: 50, // 50 requests per hour
-  message: 'Too many API requests. Please try again later.',
-  bypassInternal: true, // Allow internal website requests
+  name: 'dataset',
+  windowMs: 60 * 60 * 1000,
+  maxRequests: 50,
+  sameSiteMaxRequests: 300,
+  message: 'Too many requests for the full dataset. Please try again later.',
 });
 
 export const searchRateLimit = createRateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 10, // 10 searches per minute
+  name: 'search',
+  windowMs: 60 * 1000,
+  maxRequests: 10,
+  sameSiteMaxRequests: 120,
   message: 'Too many search requests. Please slow down.',
-  bypassInternal: true, // Allow internal website requests
+});
+
+export const lookupRateLimit = createRateLimit({
+  name: 'lookup',
+  windowMs: 60 * 1000,
+  maxRequests: 10,
+  sameSiteMaxRequests: 30,
+  message: 'Too many lookup requests. Please slow down.',
 });
 
 export const exportRateLimit = createRateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  maxRequests: 5, // 5 exports per 10 minutes
-  message: 'Too many export requests. Please wait before requesting another export.',
-  bypassInternal: true, // Allow internal website requests
-}); 
+  name: 'export',
+  windowMs: 10 * 60 * 1000,
+  maxRequests: 5,
+  sameSiteMaxRequests: 20,
+  message:
+    'Too many export requests. Please wait before requesting another export.',
+});

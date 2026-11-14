@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCachedData } from '@/lib/cache';
 import { startBackgroundSync } from '@/lib/background-sync';
 import { apiRateLimit } from '@/lib/rate-limit';
+import { corsPreflight, withCors } from '@/lib/cors';
 
 // Start background sync when the API is first accessed
 let syncStarted = false;
@@ -56,7 +57,7 @@ let syncStarted = false;
  *         $ref: '#/components/responses/ServiceUnavailable'
  */
 export async function GET(request: NextRequest) {
-  return apiRateLimit(request, async () => {
+  return withCors(await apiRateLimit(request, async () => {
   // Start background sync on first API call (server startup)
   if (!syncStarted) {
     console.log('[API] Starting background sync service...');
@@ -150,18 +151,9 @@ export async function GET(request: NextRequest) {
       }
     );
   }
-  });
+  }));
 }
 
-// Handle OPTIONS requests for CORS preflight
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': process.env.NODE_ENV === 'development' ? '*' : 'https://ipmapaws.vercel.app',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
-} 
+  return corsPreflight();
+}

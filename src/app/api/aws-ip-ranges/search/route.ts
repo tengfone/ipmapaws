@@ -3,6 +3,7 @@ import { getCachedData } from '@/lib/cache';
 import { transformAWSIPRanges, filterPrefixes, sortPrefixes } from '@/lib/api';
 import { CombinedPrefix, SortField, SortDirection } from '@/types';
 import { searchRateLimit } from '@/lib/rate-limit';
+import { corsPreflight, withCors } from '@/lib/cors';
 
 interface SearchResponse {
   data: CombinedPrefix[];
@@ -71,7 +72,7 @@ interface SearchResponse {
  *         $ref: '#/components/responses/ServiceUnavailable'
  */
 export async function GET(request: NextRequest) {
-  return searchRateLimit(request, async () => {
+  return withCors(await searchRateLimit(request, async () => {
   try {
     // Get cached AWS data
     const awsData = await getCachedData();
@@ -176,18 +177,9 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-  });
+  }));
 }
 
-// Handle OPTIONS requests for CORS preflight
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': process.env.NODE_ENV === 'development' ? '*' : 'https://ipmapaws.vercel.app',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
-} 
+  return corsPreflight();
+}

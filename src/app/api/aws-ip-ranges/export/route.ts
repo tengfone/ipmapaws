@@ -3,6 +3,7 @@ import { getCachedData } from '@/lib/cache';
 import { transformAWSIPRanges, filterPrefixes, sortPrefixes } from '@/lib/api';
 import { SortField, SortDirection } from '@/types';
 import { exportRateLimit } from '@/lib/rate-limit';
+import { corsPreflight, withCors } from '@/lib/cors';
 
 /**
  * @swagger
@@ -46,7 +47,7 @@ import { exportRateLimit } from '@/lib/rate-limit';
  *         $ref: '#/components/responses/ServiceUnavailable'
  */
 export async function GET(request: NextRequest) {
-  return exportRateLimit(request, async () => {
+  return withCors(await exportRateLimit(request, async () => {
   try {
     // Get cached AWS data
     const awsData = await getCachedData();
@@ -131,5 +132,9 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-  });
-} 
+  }));
+}
+
+export async function OPTIONS() {
+  return corsPreflight();
+}
