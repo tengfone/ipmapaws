@@ -139,12 +139,11 @@ export function usePagination(totalItems: number, itemsPerPage: number = 50) {
   
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   
-  // Reset to page 1 when total items change significantly
-  React.useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1);
-    }
-  }, [totalPages, currentPage]);
+  // Reset to page 1 when total items change significantly. Adjusting state
+  // during render (instead of in an effect) avoids an extra render pass.
+  if (currentPage > totalPages && totalPages > 0) {
+    setCurrentPage(1);
+  }
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems);

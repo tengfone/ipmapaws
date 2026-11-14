@@ -134,10 +134,10 @@ export default async function Page({ params }: Props) {
     if (!hasIPv4 && !hasIPv6) {
       notFound();
     }
-
-    return <RegionServicePage region={region} service={service} />;
   } catch (error) {
     console.error('Error loading region/service page:', error);
     throw error;
   }
+
+  return <RegionServicePage region={region} service={service} />;
 } 

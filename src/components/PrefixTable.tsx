@@ -20,24 +20,16 @@ interface PrefixTableProps {
   className?: string;
 }
 
-export function PrefixTable({
-  prefixes,
-  totalCount,
-  loading,
-  sortField,
-  sortDirection,
-  onSort,
-  onCopyPrefix,
-  copiedPrefix,
-  currentPage,
-  itemsPerPage,
-  onPageChange,
-  className,
-}: PrefixTableProps) {
-  // Calculate pagination info - data is already paginated from server
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
-  
-  const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
+interface SortButtonProps {
+  field: SortField;
+  sortField: SortField;
+  sortDirection: SortDirection;
+  onSort: (field: SortField) => void;
+  children: React.ReactNode;
+}
+
+function SortButton({ field, sortField, sortDirection, onSort, children }: SortButtonProps) {
+  return (
     <button
       className="flex items-center space-x-1 hover:text-primary font-medium"
       onClick={() => onSort(field)}
@@ -54,6 +46,25 @@ export function PrefixTable({
       )}
     </button>
   );
+}
+
+export function PrefixTable({
+  prefixes,
+  totalCount,
+  loading,
+  sortField,
+  sortDirection,
+  onSort,
+  onCopyPrefix,
+  copiedPrefix,
+  currentPage,
+  itemsPerPage,
+  onPageChange,
+  className,
+}: PrefixTableProps) {
+  // Calculate pagination info - data is already paginated from server
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const sortProps = { sortField, sortDirection, onSort };
 
   if (loading) {
     return (
@@ -86,16 +97,16 @@ export function PrefixTable({
             <thead className="bg-muted/30 border-b">
               <tr>
                 <th className="text-left p-4 text-sm font-medium">
-                  <SortButton field="prefix">IP Prefix</SortButton>
+                  <SortButton field="prefix" {...sortProps}>IP Prefix</SortButton>
                 </th>
                 <th className="text-left p-4 text-sm font-medium">
-                  <SortButton field="region">Region</SortButton>
+                  <SortButton field="region" {...sortProps}>Region</SortButton>
                 </th>
                 <th className="text-left p-4 text-sm font-medium">
-                  <SortButton field="service">Service</SortButton>
+                  <SortButton field="service" {...sortProps}>Service</SortButton>
                 </th>
                 <th className="text-left p-4 text-sm font-medium">
-                  <SortButton field="network_border_group">Network Border Group</SortButton>
+                  <SortButton field="network_border_group" {...sortProps}>Network Border Group</SortButton>
                 </th>
                 <th className="text-left p-4 text-sm font-medium">Type</th>
                 <th className="text-left p-4 text-sm font-medium">Actions</th>

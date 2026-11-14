@@ -8,6 +8,9 @@ interface DataStatusProps {
 }
 
 export function DataStatus({ lastUpdated, className }: DataStatusProps) {
+  // Read the clock once per mount, not during every render (render must stay pure).
+  const [now] = React.useState(() => Date.now());
+
   const formatAWSDate = (dateString: string) => {
     try {
       // AWS format: "2025-07-15-23-33-17"
@@ -27,7 +30,7 @@ export function DataStatus({ lastUpdated, className }: DataStatusProps) {
             timeZone: 'UTC'
           }),
           iso: date.toISOString(),
-          age: Date.now() - date.getTime()
+          age: now - date.getTime()
         };
       }
       return {

@@ -78,10 +78,10 @@ export default async function Page({ params }: Props) {
     if (!regions.includes(region)) {
       notFound();
     }
-
-    return <RegionPage region={region} />;
   } catch (error) {
     console.error('Error loading region page:', error);
     throw error;
   }
+
+  return <RegionPage region={region} />;
 } 
