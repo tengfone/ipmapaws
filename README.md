@@ -24,7 +24,7 @@ A comprehensive Next.js web application and REST API for exploring AWS IP addres
 - **OpenAPI 3.0**: Complete specification with interactive documentation
 - **No Authentication**: Free public access with transparent rate limits
 - **JSON Responses**: Clean, consistent API responses
-- **CORS Enabled**: Ready for client-side integration
+- **CORS Enabled**: Any site can call the API from the browser (`Access-Control-Allow-Origin: *`)
 
 ### 📊 Data & Performance
 

@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 
-const PRODUCTION_ORIGIN = 'https://ipmapaws.vercel.app';
-
+// The API is public: any site may call it from the browser. No cookies or
+// credentials are used, so a wildcard origin is safe.
 export function corsHeaders(): Record<string, string> {
   return {
-    'Access-Control-Allow-Origin':
-      process.env.NODE_ENV === 'development' ? '*' : PRODUCTION_ORIGIN,
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Expose-Headers':

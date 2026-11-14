@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
       headers: {
         // Short cache since this is dynamic content
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-        'Access-Control-Allow-Origin': process.env.NODE_ENV === 'development' ? '*' : 'https://ipmapaws.vercel.app',
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET',
         'Access-Control-Allow-Headers': 'Content-Type',
         'X-Data-Source': 'AWS IP Ranges API (Server-Side Filtered)',

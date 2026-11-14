@@ -41,7 +41,7 @@ afterEach(() => {
 });
 
 function expectCors(response: Response) {
-  expect(response.headers.get('access-control-allow-origin')).toBeTruthy();
+  expect(response.headers.get('access-control-allow-origin')).toBe('*');
   expect(response.headers.get('access-control-allow-methods')).toContain('GET');
 }
 

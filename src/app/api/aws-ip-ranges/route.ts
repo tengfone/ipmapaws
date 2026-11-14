@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
         // Cache for 1 hour on CDN, allow stale while revalidating for 24 hours
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
         // Add CORS headers for development
-        'Access-Control-Allow-Origin': process.env.NODE_ENV === 'development' ? '*' : 'https://ipmapaws.vercel.app',
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET',
         'Access-Control-Allow-Headers': 'Content-Type',
         // Add custom headers for debugging
