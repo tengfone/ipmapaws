@@ -13,3 +13,9 @@ updates:
         applies-to: version-updates
         update-types: [minor, patch]
     labels: [dependencies]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    labels: [dependencies]
