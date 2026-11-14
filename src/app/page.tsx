@@ -140,7 +140,7 @@ export default function HomePage() {
       <PrefixLookup />
 
       {/* API Announcement */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+      <div className="bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center justify-center h-12 w-12 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -260,9 +260,9 @@ export default function HomePage() {
           <div className="text-green-400 font-mono text-sm space-y-2">
             <div className="text-gray-400"># Which published prefix contains this address?</div>
             <div>{'curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/lookup?q=3.5.16.1"'}</div>
-            <div className="text-gray-400 mt-4"># Get EC2 IP ranges in us-east-1</div>
+            <div className="text-gray-400"># Get EC2 IP ranges in us-east-1</div>
             <div>{'curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/search?regions=us-east-1&services=EC2"'}</div>
-            <div className="text-gray-400 mt-4"># Export all S3 ranges as JSON</div>
+            <div className="text-gray-400"># Export all S3 ranges as JSON</div>
             <div>{'curl "https://ipmapaws.vercel.app/api/aws-ip-ranges/export?services=S3"'}</div>
           </div>
           <div className="mt-4">

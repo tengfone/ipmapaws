@@ -436,7 +436,7 @@ export default function ApiDocsPage() {
         <div className="bg-muted/50 rounded-lg p-4 mb-6">
           <h2 className="font-semibold mb-2">Base URL</h2>
           <div className="flex items-center space-x-2">
-            <code className="text-sm bg-card px-2 py-1 rounded border flex-1">
+            <code className="text-sm bg-card px-2 py-1 rounded-sm border flex-1">
               {baseUrl}
             </code>
             <button
@@ -469,14 +469,14 @@ export default function ApiDocsPage() {
                 <div className="border-b p-6 bg-muted/30">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <span className={`px-2 py-1 rounded text-xs font-mono font-medium ${
+                      <span className={`px-2 py-1 rounded-sm text-xs font-mono font-medium ${
                         endpoint.method === 'GET' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
                       }`}>
                         {endpoint.method}
                       </span>
                       <code className="text-sm font-mono">{endpoint.path}</code>
                     </div>
-                    <div className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                    <div className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-sm">
                       {endpoint.rateLimit}
                     </div>
                   </div>
@@ -512,7 +512,7 @@ export default function ApiDocsPage() {
                             <div className="text-sm mb-2">{param.description}</div>
                             {param.example && (
                               <div className="text-xs text-muted-foreground">
-                                Default: <code className="bg-muted px-1 rounded">{param.example}</code>
+                                Default: <code className="bg-muted px-1 rounded-sm">{param.example}</code>
                               </div>
                             )}
                           </div>
@@ -602,7 +602,7 @@ export default function ApiDocsPage() {
                         <div className="flex items-center space-x-2">
                           <span className="text-sm font-medium">Response</span>
                           {result.status && (
-                            <span className={`text-xs px-2 py-1 rounded ${
+                            <span className={`text-xs px-2 py-1 rounded-sm ${
                               result.status < 400 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                             }`}>
                               {result.status}

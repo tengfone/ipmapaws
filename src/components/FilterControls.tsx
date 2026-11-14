@@ -97,7 +97,7 @@ export function FilterControls({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Search Input */}
         <div className="space-y-2">
-          <label htmlFor="search" className="text-sm font-medium">
+          <label htmlFor="search" className="block text-sm leading-6 font-medium">
             Search
           </label>
           <div className="relative">
@@ -115,7 +115,7 @@ export function FilterControls({
 
         {/* Region Filter */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">
+          <label className="block text-sm leading-6 font-medium">
             Regions
           </label>
           <SearchableMultiSelect
@@ -129,7 +129,7 @@ export function FilterControls({
 
         {/* Service Filter */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">
+          <label className="block text-sm leading-6 font-medium">
             Services
           </label>
           <SearchableMultiSelect
@@ -143,7 +143,7 @@ export function FilterControls({
 
         {/* IP Type Filters */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">IP Type</label>
+          <label className="block text-sm leading-6 font-medium">IP Type</label>
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
               <input
@@ -151,7 +151,7 @@ export function FilterControls({
                 type="checkbox"
                 checked={filters.includeIPv4}
                 onChange={handleIPv4Toggle}
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                className="h-4 w-4 rounded-sm border-gray-300 text-primary focus:ring-primary"
               />
               <label htmlFor="ipv4" className="text-sm">
                 IPv4
@@ -163,7 +163,7 @@ export function FilterControls({
                 type="checkbox"
                 checked={filters.includeIPv6}
                 onChange={handleIPv6Toggle}
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                className="h-4 w-4 rounded-sm border-gray-300 text-primary focus:ring-primary"
               />
               <label htmlFor="ipv6" className="text-sm">
                 IPv6

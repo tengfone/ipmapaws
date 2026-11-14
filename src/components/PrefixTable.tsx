@@ -119,7 +119,7 @@ export function PrefixTable({
                   className="border-b hover:bg-muted/50 transition-colors"
                 >
                   <td className="p-4">
-                    <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
+                    <code className="text-sm bg-muted px-2 py-1 rounded-sm font-mono">
                       {prefix.prefix}
                     </code>
                   </td>

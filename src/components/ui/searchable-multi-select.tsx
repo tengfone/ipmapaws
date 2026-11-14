@@ -77,7 +77,7 @@ export function SearchableMultiSelect({
       <button
         type="button"
         className={cn(
-          'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+          'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
           disabled && 'cursor-not-allowed opacity-50'
         )}
         onClick={() => !disabled && setIsOpen(!isOpen)}
@@ -140,7 +140,7 @@ export function SearchableMultiSelect({
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-2 py-1 text-sm bg-transparent border-0 outline-none placeholder:text-muted-foreground"
+                className="w-full pl-8 pr-2 py-1 text-sm bg-transparent border-0 outline-hidden placeholder:text-muted-foreground"
               />
             </div>
           </div>

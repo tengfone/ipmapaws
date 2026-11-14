@@ -89,11 +89,11 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <div className="min-h-screen bg-background font-sans antialiased">
           <div className="relative flex min-h-screen flex-col">
-            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">
               <div className="container flex h-14 items-center">
                 <div className="mr-4 hidden md:flex">
                   <Link className="mr-6 flex items-center space-x-2" href="/">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary text-primary-foreground">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-primary text-primary-foreground">
                       <span className="text-sm font-bold">IP</span>
                     </div>
                     <span className="hidden font-bold sm:inline-block">
@@ -110,7 +110,7 @@ export default function RootLayout({
                   <nav className="flex items-center space-x-2">
                     <a
                       href="/docs"
-                      className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-9 py-2 px-0 w-9"
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-9 py-2 px-0 w-9"
                       title="API Documentation"
                     >
                       <svg
@@ -130,7 +130,7 @@ export default function RootLayout({
                     </a>
                     <a
                       href="https://github.com/tengfone/ipmapaws"
-                      className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-9 py-2 px-0 w-9"
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background hover:bg-accent hover:text-accent-foreground h-9 py-2 px-0 w-9"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
