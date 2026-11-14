@@ -37,7 +37,7 @@ A comprehensive Next.js web application and REST API for exploring AWS IP addres
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.9+ (CI uses Node 24)
 - npm 8+
 
 ### Installation
@@ -221,10 +221,10 @@ A `429` response also carries `Retry-After`. Counters are kept in memory, so on 
 
 ### Core Framework
 
-- **Next.js 15**: React framework with App Router
+- **Next.js 16**: React framework with App Router
 - **TypeScript**: Type-safe development
-- **Tailwind CSS**: Utility-first styling
-- **React 18**: Latest React features
+- **Tailwind CSS 4**: Utility-first styling
+- **React 19**: Latest React features
 
 ### Data & API
 
