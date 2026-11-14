@@ -15,9 +15,8 @@ export function corsHeaders(): Record<string, string> {
 
 /**
  * Adds CORS headers to any response (including 4xx/5xx, so browsers can read
- * the error body) and keeps error responses out of shared caches: the
- * next.config.js default for /api/* would otherwise let a CDN cache a 429 or
- * 503 and serve it to everyone.
+ * the error body) and keeps error responses out of shared caches, so a CDN
+ * never serves one client's 429 or a transient 503 to everyone.
  */
 export function withCors(response: NextResponse): NextResponse {
   for (const [key, value] of Object.entries(corsHeaders())) {

@@ -8,19 +8,9 @@ const nextConfig = {
       },
     ];
   },
-  async headers() {
-    return [
-      {
-        source: '/api/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
-          },
-        ],
-      },
-    ];
-  },
+  // No blanket Cache-Control for /api/*: a next.config header overrides the
+  // one a route sets, which made every API response (including 400/429/503)
+  // cacheable for an hour. Each route sets its own Cache-Control instead.
   images: {
     domains: [],
   },
