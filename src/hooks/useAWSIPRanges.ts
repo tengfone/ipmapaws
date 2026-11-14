@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import useSWR from 'swr';
 import { fetchAWSIPRanges, transformAWSIPRanges, extractRegions, extractServices } from '@/lib/api';
 import { AWSIPRanges, CombinedPrefix, IPRangeStats, FilterOptions, SortField, SortDirection } from '@/types';
@@ -60,20 +61,29 @@ export function useAWSIPRanges(): UseAWSIPRangesReturn {
     }
   );
 
-  // Transform and process data
-  const combinedPrefixes = data ? transformAWSIPRanges(data) : [];
-  const regions = data ? extractRegions(data) : [];
-  const services = data ? extractServices(data) : [];
-
-  // Calculate statistics
-  const stats: IPRangeStats | null = data ? {
-    totalPrefixes: combinedPrefixes.length,
-    ipv4Count: data.prefixes.length,
-    ipv6Count: data.ipv6_prefixes.length,
-    regionCount: regions.length,
-    serviceCount: services.length,
-    lastUpdated: data.createDate,
-  } : null;
+  // Transform and process data once per dataset, not on every render
+  const { combinedPrefixes, regions, services, stats } = useMemo(() => {
+    if (!data) {
+      return {
+        combinedPrefixes: [] as CombinedPrefix[],
+        regions: [] as string[],
+        services: [] as string[],
+        stats: null as IPRangeStats | null,
+      };
+    }
+    const combinedPrefixes = transformAWSIPRanges(data);
+    const regions = extractRegions(data);
+    const services = extractServices(data);
+    const stats: IPRangeStats = {
+      totalPrefixes: combinedPrefixes.length,
+      ipv4Count: data.prefixes.length,
+      ipv6Count: data.ipv6_prefixes.length,
+      regionCount: regions.length,
+      serviceCount: services.length,
+      lastUpdated: data.createDate,
+    };
+    return { combinedPrefixes, regions, services, stats };
+  }, [data]);
 
   return {
     data,
@@ -124,7 +134,6 @@ export function useAWSIPRangesSearch(
       const response = await fetch(url, {
         headers: {
           'Accept': 'application/json',
-          'X-Internal-Request': 'true', // Mark as internal website request to bypass rate limiting
         },
       });
       if (!response.ok) {

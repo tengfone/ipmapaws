@@ -3,6 +3,7 @@ import { twMerge } from 'tailwind-merge';
 import Papa from 'papaparse';
 import copy from 'clipboard-copy';
 import { CombinedPrefix } from '@/types';
+import { isValidCidr } from '@/lib/lookup';
 
 /**
  * Merges class names using clsx and tailwind-merge
@@ -108,10 +109,9 @@ export function formatNumber(num: number): string {
  * Validates if a string is a valid CIDR notation
  */
 export function isValidCIDR(cidr: string): boolean {
-  const cidrRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$/;
-  const ipv6CidrRegex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8])$/;
-  
-  return cidrRegex.test(cidr) || ipv6CidrRegex.test(cidr);
+  // Shares the parser used by the prefix lookup, so compressed IPv6
+  // (2001:db8::/32) is accepted and ambiguous input (leading zeros) is not.
+  return isValidCidr(cidr);
 }
 
 /**

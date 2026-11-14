@@ -1,37 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCachedData } from '@/lib/cache';
-import { transformAWSIPRanges } from '@/lib/api';
+import { corsPreflight, withCors } from '@/lib/cors';
 import {
+  getPrefixIndex,
   InvalidLookupQueryError,
-  lookupContainingPrefixes,
+  lookupPrefixes,
+  normalizeQuery,
 } from '@/lib/lookup';
-import { searchRateLimit } from '@/lib/rate-limit';
+import { lookupRateLimit } from '@/lib/rate-limit';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin':
-    process.env.NODE_ENV === 'development'
-      ? '*'
-      : 'https://ipmapaws.vercel.app',
-  'Access-Control-Allow-Methods': 'GET',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+function errorResponse(
+  status: number,
+  error: string,
+  message: string,
+  headers?: Record<string, string>
+) {
+  return NextResponse.json(
+    { error, message, timestamp: new Date().toISOString() },
+    { status, headers }
+  );
+}
 
 /**
  * @swagger
  * /api/aws-ip-ranges/lookup:
  *   get:
- *     summary: Find published AWS prefixes that contain an IP or CIDR
- *     description: Returns every published AWS prefix that contains the query. A single address matches when it falls inside a prefix. A CIDR matches only when the whole range is inside a prefix.
+ *     summary: Find published AWS prefixes that contain or overlap an IP or CIDR
+ *     description: |
+ *       Returns the published AWS prefixes that contain the query, most specific first, with the
+ *       single most specific one as `bestMatch`. For a CIDR query it also returns the published
+ *       prefixes that fall inside the queried range (`contained`, capped at 100; `containedTotal`
+ *       has the full count). IPv4-mapped IPv6 addresses (`::ffff:3.5.16.1`) are looked up as IPv4.
+ *       Brackets (`[2600::1]`) and IPv6 zone ids (`fe80::1%eth0`) are stripped. IPv4 octets and
+ *       prefix lengths with leading zeros are rejected as ambiguous.
  *     tags:
  *       - AWS IP Ranges
  *     parameters:
  *       - $ref: '#/components/parameters/LookupQuery'
  *     responses:
  *       200:
- *         description: Containing prefixes, or an empty match list when the query is outside the published ranges
+ *         description: Lookup result. `found` is false when no published prefix contains or falls inside the query.
  *         headers:
  *           X-RateLimit-Limit:
- *             description: Rate limit threshold (10 requests/minute)
+ *             description: Requests allowed in the current window (10 requests/minute per IP)
  *             schema:
  *               type: integer
  *           X-RateLimit-Remaining:
@@ -54,100 +65,72 @@ const corsHeaders = {
  *               $ref: '#/components/schemas/Error'
  *       429:
  *         $ref: '#/components/responses/RateLimitExceeded'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
  *       503:
  *         $ref: '#/components/responses/ServiceUnavailable'
  */
 export async function GET(request: NextRequest) {
-  return searchRateLimit(request, async () => {
+  const response = await lookupRateLimit(request, async () => {
+    const query = new URL(request.url).searchParams.get('q');
+    if (query === null || query.trim() === '') {
+      return errorResponse(
+        400,
+        'Invalid query',
+        'Query parameter q is required. Enter an IPv4 address, IPv6 address, or CIDR prefix.'
+      );
+    }
+
+    try {
+      // Reject bad input before touching the data store.
+      normalizeQuery(query);
+    } catch (error) {
+      if (error instanceof InvalidLookupQueryError) {
+        return errorResponse(400, 'Invalid query', error.message);
+      }
+      throw error;
+    }
+
     try {
       const awsData = await getCachedData();
-
       if (!awsData) {
-        return NextResponse.json(
-          {
-            error: 'Data not available yet',
-            message:
-              'Background sync is initializing. Please try again in a few moments.',
-            timestamp: new Date().toISOString(),
-          },
-          { status: 503 }
+        return errorResponse(
+          503,
+          'Data not available yet',
+          'Background sync is initializing. Please try again in a few moments.',
+          { 'Retry-After': '30' }
         );
       }
 
-      const query = new URL(request.url).searchParams.get('q');
-      if (query === null || query.trim() === '') {
-        return NextResponse.json(
-          {
-            error: 'Invalid query',
-            message:
-              'Query parameter q is required. Enter an IPv4 address, IPv6 address, or CIDR prefix.',
-            timestamp: new Date().toISOString(),
-          },
-          { status: 400 }
-        );
-      }
-
-      try {
-        const result = lookupContainingPrefixes(
-          transformAWSIPRanges(awsData),
-          query
-        );
-
-        return NextResponse.json(
-          {
-            query: result.query,
-            found: result.found,
-            matches: result.matches,
-          },
-          {
-            status: 200,
-            headers: {
-              'Cache-Control':
-                'public, s-maxage=60, stale-while-revalidate=300',
-              ...corsHeaders,
-              'X-Data-Source': 'AWS IP Ranges API (Server-Side Filtered)',
-            },
-          }
-        );
-      } catch (error) {
-        if (error instanceof InvalidLookupQueryError) {
-          return NextResponse.json(
-            {
-              error: 'Invalid query',
-              message: error.message,
-              timestamp: new Date().toISOString(),
-            },
-            { status: 400 }
-          );
-        }
-        throw error;
-      }
-    } catch (error) {
-      console.error('Error in AWS IP ranges lookup API:', error);
+      const result = lookupPrefixes(getPrefixIndex(awsData), query);
 
       return NextResponse.json(
         {
-          error: 'Failed to look up AWS IP ranges',
-          message: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: new Date().toISOString(),
+          ...result,
+          syncToken: awsData.syncToken,
+          createDate: awsData.createDate,
         },
-        { status: 500 }
+        {
+          status: 200,
+          headers: {
+            'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+            'X-Data-Source': 'AWS IP Ranges API (Server-Side Lookup)',
+          },
+        }
+      );
+    } catch (error) {
+      console.error('Error in AWS IP ranges lookup API:', error);
+      return errorResponse(
+        500,
+        'Failed to look up AWS IP ranges',
+        'An unexpected error occurred. Please try again later.'
       );
     }
   });
+
+  return withCors(response);
 }
 
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin':
-        process.env.NODE_ENV === 'development'
-          ? '*'
-          : 'https://ipmapaws.vercel.app',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
+  return corsPreflight();
 }
