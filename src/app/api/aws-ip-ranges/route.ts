@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAWSIPRangesServer } from '@/lib/server-data';
-import { startBackgroundSync } from '@/lib/background-sync';
 import { apiRateLimit } from '@/lib/rate-limit';
 import { corsPreflight, withCors } from '@/lib/cors';
-
-// Start background sync when the API is first accessed
-let syncStarted = false;
 
 /**
  * @swagger
@@ -31,10 +27,6 @@ let syncStarted = false;
  *             description: AWS sync token
  *             schema:
  *               type: string
- *           X-Cache-Status:
- *             description: Cache status
- *             schema:
- *               type: string
  *           X-RateLimit-Limit:
  *             description: Rate limit threshold
  *             schema:
@@ -58,51 +50,15 @@ let syncStarted = false;
  */
 export async function GET(request: NextRequest) {
   return withCors(await apiRateLimit(request, async () => {
-  // Start background sync on first API call (server startup)
-  if (!syncStarted) {
-    console.log('[API] Starting background sync service...');
-    startBackgroundSync();
-    syncStarted = true;
-  }
-
   try {
-    // Try to get cached data first
-    let data = await getAWSIPRangesServer().catch(() => null);
-    
-    // If no cached data and in serverless environment, try to fetch directly
-    if (!data && process.env.VERCEL) {
-      console.log('[API] No cached data in serverless environment, fetching directly...');
-      try {
-        const response = await fetch('https://ip-ranges.amazonaws.com/ip-ranges.json', {
-          headers: {
-            'User-Agent': 'IPMapAWS/1.0 (API Fallback)',
-            'Accept': 'application/json',
-          },
-          cache: 'no-store'
-        });
-        
-        if (response.ok) {
-          data = await response.json();
-          // Try to cache it for future requests (may fail silently)
-          if (data) {
-            const { setCachedData } = await import('@/lib/cache');
-            setCachedData(data).catch(err => {
-              console.log('[API] Failed to cache fallback data:', err.message);
-            });
-            console.log('[API] Successfully fetched data directly from AWS');
-          }
-        }
-      } catch (fallbackError) {
-        console.error('[API] Direct fetch fallback failed:', fallbackError);
-      }
-    }
-    
+    const data = await getAWSIPRangesServer().catch(() => null);
+
     if (!data) {
       // No cached data available and fallback failed
       return NextResponse.json(
         { 
-          error: 'Data not available yet',
-          message: 'Background sync is initializing. Please try again in a few moments.',
+          error: 'Data not available',
+          message: 'Could not load the AWS IP ranges. Please try again in a few moments.',
           timestamp: new Date().toISOString()
         },
         { 
@@ -126,10 +82,9 @@ export async function GET(request: NextRequest) {
         'Access-Control-Allow-Methods': 'GET',
         'Access-Control-Allow-Headers': 'Content-Type',
         // Add custom headers for debugging
-        'X-Data-Source': 'AWS IP Ranges API (Cached)',
+        'X-Data-Source': 'AWS IP Ranges (ip-ranges.amazonaws.com)',
         'X-Last-Updated': data.createDate,
         'X-Sync-Token': data.syncToken,
-        'X-Cache-Status': 'HIT',
       },
     });
 

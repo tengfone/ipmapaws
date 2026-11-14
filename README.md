@@ -10,7 +10,7 @@ A comprehensive Next.js web application and REST API for exploring AWS IP addres
 
 - **Prefix Lookup**: Paste an IP or CIDR and see which published AWS prefix contains it (runs in your browser)
 - **Advanced Search & Filtering**: Filter by region, service, CIDR notation, IPv4/IPv6
-- **Real-time Data**: Automatically syncs with AWS official IP ranges
+- **Fresh Data**: Read straight from AWS's official `ip-ranges.json`, refreshed hourly
 - **Interactive Tables**: Sortable, paginated results with copy-to-clipboard
 - **CSV Export**: Export filtered results for external analysis
 - **Responsive Design**: Mobile-friendly interface built with Tailwind CSS
@@ -28,10 +28,10 @@ A comprehensive Next.js web application and REST API for exploring AWS IP addres
 
 ### 📊 Data & Performance
 
-- **Background Sync**: Automatic data updates without blocking requests
-- **Smart Caching**: ISR (Incremental Static Regeneration) for optimal performance
+- **No Database or Storage**: Data comes straight from AWS's `ip-ranges.json`, which AWS serves from its own CDN
+- **Smart Caching**: Pages regenerate hourly (ISR) and API responses are cached on Vercel's CDN
 - **Real-time Stats**: Live data freshness indicators
-- **High Availability**: Cached responses ensure uptime during AWS updates
+- **High Availability**: If AWS is briefly unreachable, the last good copy keeps being served
 
 ## 🚀 Quick Start
 
@@ -229,9 +229,7 @@ A `429` response also carries `Retry-After`. Counters are kept in memory, so on 
 ### Data & API
 
 - **SWR**: Client-side data fetching with caching
-- **Vercel Blob**: Persistent storage for cache with S3-backed durability
 - **Custom Rate Limiting**: IP-based with multiple tier system
-- **Background Sync**: Non-blocking data updates
 - **OpenAPI 3.0**: Complete API specification
 
 ### Development & Testing
@@ -246,7 +244,6 @@ A `429` response also carries `Retry-After`. Counters are kept in memory, so on 
 - **Vercel**: Serverless deployment platform
 - **ISR**: Incremental Static Regeneration
 - **Edge Caching**: Global CDN distribution
-- **Background Jobs**: Automated data synchronization
 
 ## 📂 Project Structure
 
@@ -267,7 +264,7 @@ IPMapAWS/
 │   ├── lib/                  # Utility functions
 │   │   ├── api.ts           # Data fetching logic
 │   │   ├── rate-limit.ts    # Rate limiting middleware
-│   │   ├── background-sync.ts # Auto-sync service
+│   │   ├── server-data.ts # Loads and caches AWS data on the server
 │   │   └── swagger.ts       # OpenAPI configuration
 │   └── types/               # TypeScript definitions
 ├── tests/                   # Test files
@@ -282,10 +279,6 @@ IPMapAWS/
 # Optional: Custom base URL (defaults to Vercel URL)
 NEXT_PUBLIC_BASE_URL=https://yourdomain.com
 
-# Required for Vercel Blob storage (auto-configured on Vercel)
-# When deploying to Vercel, this is automatically provided
-# For local development, you may need to set this manually
-BLOB_READ_WRITE_TOKEN=your_blob_token_here
 ```
 
 ### Rate Limiting
@@ -299,9 +292,9 @@ Rate limits are configurable in `src/lib/rate-limit.ts`:
 
 Requests from the site's own pages (same-origin `Sec-Fetch-Site` or `Referer`) get a higher but finite per-IP limit so the UI stays usable. No header disables rate limiting. The limiter keys on `x-real-ip` / `x-forwarded-for`, which Vercel sets; behind another host, make sure a proxy overwrites them.
 
-### Background Sync
+### Data Freshness
 
-Data automatically syncs from AWS every 24 hours. Configurable in `src/lib/background-sync.ts`.
+There is no database or storage to set up. Server code fetches AWS's `ip-ranges.json` directly (`src/lib/server-data.ts`) and keeps it in memory for an hour; region pages regenerate hourly and API responses are cached on the CDN. AWS publishes changes several times a week, so data is at most about an hour behind.
 
 ## 🧪 Testing
 
@@ -349,11 +342,9 @@ npm run test:coverage
 
 ### Data Integrity
 
-- **Persistent Caching**: Vercel Blob storage ensures cache survives deployments and function restarts
+- **No Storage to Manage**: Nothing to provision, pay for or keep in sync
 - **Automatic Validation**: Response structure verification
-- **Fallback Handling**: Graceful degradation during AWS outages
-- **Background Updates**: Non-blocking data refresh
-- **Cache Invalidation**: Smart cache management
+- **Fallback Handling**: Keeps serving the last good copy during AWS outages
 
 ### Error Handling
 
@@ -366,9 +357,8 @@ npm run test:coverage
 ### Vercel (Recommended)
 
 1. Connect your GitHub repository to Vercel
-2. Vercel Blob storage is automatically configured
-3. Configure additional environment variables (optional)
-4. Deploy automatically on push to main branch
+2. Configure environment variables (optional)
+3. Deploy automatically on push to main branch
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftengfone%2Fipmapaws)
 

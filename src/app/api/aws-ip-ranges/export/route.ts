@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { 
           error: 'Data not available yet',
-          message: 'Background sync is initializing. Please try again in a few moments.',
+          message: 'Could not load the AWS IP ranges. Please try again in a few moments.',
           timestamp: new Date().toISOString()
         },
         { status: 503 }

@@ -1,10 +1,4 @@
 import { getAWSIPRangesServer, resetServerDataMemo } from '../server-data';
-import { getCachedData, setCachedData } from '../cache';
-
-jest.mock('../cache', () => ({
-  getCachedData: jest.fn(),
-  setCachedData: jest.fn(() => Promise.resolve()),
-}));
 
 const sample = {
   syncToken: '1',
@@ -13,47 +7,49 @@ const sample = {
   ipv6_prefixes: [],
 };
 
+const ok = (body: unknown) => ({ ok: true, json: async () => body });
+
 describe('getAWSIPRangesServer', () => {
   const fetchMock = jest.fn();
   beforeEach(() => {
     resetServerDataMemo();
-    jest.mocked(getCachedData).mockReset();
-    jest.mocked(setCachedData).mockClear();
     fetchMock.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
+    jest.useRealTimers();
   });
 
-  it('uses cached data without any network call', async () => {
-    jest.mocked(getCachedData).mockResolvedValue(sample as never);
-    await expect(getAWSIPRangesServer()).resolves.toBe(sample);
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('falls back to AWS directly, never to this app over HTTP', async () => {
-    jest.mocked(getCachedData).mockResolvedValue(null);
-    fetchMock.mockResolvedValue({ ok: true, json: async () => sample });
+  it('fetches straight from AWS, never from this app over HTTP', async () => {
+    fetchMock.mockResolvedValue(ok(sample));
     await expect(getAWSIPRangesServer()).resolves.toEqual(sample);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][0]).toBe('https://ip-ranges.amazonaws.com/ip-ranges.json');
-    expect(setCachedData).toHaveBeenCalledWith(sample);
   });
 
   it('loads once and shares the result across concurrent callers', async () => {
-    jest.mocked(getCachedData).mockResolvedValue(null);
-    fetchMock.mockResolvedValue({ ok: true, json: async () => sample });
+    fetchMock.mockResolvedValue(ok(sample));
     await Promise.all([getAWSIPRangesServer(), getAWSIPRangesServer(), getAWSIPRangesServer()]);
     await getAWSIPRangesServer();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('throws on an invalid AWS response', async () => {
-    jest.mocked(getCachedData).mockResolvedValue(null);
-    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ nope: true }) });
+  it('refreshes after an hour and keeps the last good copy if AWS fails', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-11-14T00:00:00Z'));
+    fetchMock.mockResolvedValueOnce(ok(sample));
+    await getAWSIPRangesServer();
+
+    jest.setSystemTime(new Date('2026-11-14T01:00:01Z'));
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 503 });
+    await expect(getAWSIPRangesServer()).resolves.toEqual(sample);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws on an invalid AWS response when there is no earlier copy', async () => {
+    fetchMock.mockResolvedValue(ok({ nope: true }));
     await expect(getAWSIPRangesServer()).rejects.toThrow('Invalid');
   });
 
-  it('throws on an HTTP error from AWS', async () => {
-    jest.mocked(getCachedData).mockResolvedValue(null);
+  it('throws on an HTTP error when there is no earlier copy', async () => {
     fetchMock.mockResolvedValue({ ok: false, status: 503 });
     await expect(getAWSIPRangesServer()).rejects.toThrow('HTTP 503');
   });

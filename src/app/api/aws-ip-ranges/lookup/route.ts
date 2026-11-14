@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
         return errorResponse(
           503,
           'Data not available yet',
-          'Background sync is initializing. Please try again in a few moments.',
+          'Could not load the AWS IP ranges. Please try again in a few moments.',
           { 'Retry-After': '30' }
         );
       }

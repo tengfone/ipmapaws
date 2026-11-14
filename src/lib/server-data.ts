@@ -1,30 +1,22 @@
 import { AWSIPRanges } from '@/types';
-import { getCachedData, setCachedData } from '@/lib/cache';
 
 const AWS_IP_RANGES_URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json';
+
+/** How long one process reuses a copy before asking AWS again. */
+const FRESH_MS = 60 * 60 * 1000;
 
 function isValid(data: unknown): data is AWSIPRanges {
   const d = data as Partial<AWSIPRanges> | null;
   return !!d && Array.isArray(d.prefixes) && Array.isArray(d.ipv6_prefixes) && !!d.syncToken;
 }
 
-/**
- * Loads AWS IP ranges for server components and build-time generation.
- *
- * Server code must not call this app's own API over HTTP: there is no
- * reliable base URL on Vercel (and none at build time), so it reads the
- * shared cache directly and falls back to AWS.
- */
-const MEMO_TTL_MS = 60 * 60 * 1000;
 let memo: { data: AWSIPRanges; at: number } | null = null;
 let inFlight: Promise<AWSIPRanges> | null = null;
 
-async function load(): Promise<AWSIPRanges> {
-  const cached = await getCachedData();
-  if (cached) return cached;
-
-  // The file is ~3.6 MB, over Next's 2 MB fetch-cache limit, so skip that
-  // cache and memoise in this process instead.
+async function fetchFromAWS(): Promise<AWSIPRanges> {
+  // AWS serves this file from its own CDN for exactly this use. It is ~3.6 MB,
+  // over Next's 2 MB fetch-cache limit, so it is kept in memory here instead,
+  // and the pages and API responses that use it are cached by Vercel's CDN.
   const response = await fetch(AWS_IP_RANGES_URL, {
     headers: { Accept: 'application/json', 'User-Agent': 'IPMapAWS/1.0' },
     cache: 'no-store',
@@ -36,26 +28,27 @@ async function load(): Promise<AWSIPRanges> {
   if (!isValid(data)) {
     throw new Error('Invalid AWS IP ranges response structure');
   }
-  setCachedData(data).catch(() => {
-    // Caching is best effort; the page still renders with fresh data.
-  });
   return data;
 }
 
 /**
- * Loads AWS IP ranges for server components and build-time generation.
+ * Loads AWS IP ranges for server components, API routes and build-time
+ * generation, straight from AWS with no storage of our own.
  *
- * Server code must not call this app's own API over HTTP: there is no
- * reliable base URL on Vercel (and none at build time), so it reads the
- * shared cache directly and falls back to AWS. Results are shared for an
- * hour within a process, so a build renders hundreds of pages from one load.
+ * A process reuses its copy for an hour, and concurrent callers share one
+ * download, so a build renders hundreds of pages from a single fetch. If a
+ * refresh fails, the last good copy keeps being served rather than an error.
  */
 export async function getAWSIPRangesServer(): Promise<AWSIPRanges> {
-  if (memo && Date.now() - memo.at < MEMO_TTL_MS) return memo.data;
-  inFlight ??= load()
+  if (memo && Date.now() - memo.at < FRESH_MS) return memo.data;
+  inFlight ??= fetchFromAWS()
     .then((data) => {
       memo = { data, at: Date.now() };
       return data;
+    })
+    .catch((error) => {
+      if (memo) return memo.data;
+      throw error;
     })
     .finally(() => {
       inFlight = null;
