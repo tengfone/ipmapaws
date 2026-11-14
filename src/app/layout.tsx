@@ -164,7 +164,16 @@ export default function RootLayout({
                   </p>
                 </div>
                 <p className="text-center text-sm text-muted-foreground md:text-left">
-                  © 2025 IPMapAWS. Open source project.
+                  IPMapAWS is open source under the{' '}
+                  <a
+                    href="https://github.com/tengfone/ipmapaws/blob/main/LICENSE"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium underline underline-offset-4"
+                  >
+                    MIT License
+                  </a>
+                  .
                 </p>
               </div>
             </footer>
