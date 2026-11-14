@@ -25,7 +25,7 @@ const API_ENDPOINTS: ApiEndpoint[] = [
     method: 'GET',
     path: '/api/aws-ip-ranges/lookup',
     summary: 'Find the AWS prefix that contains an IP or CIDR',
-    description: 'Returns every published AWS prefix that contains the address or CIDR. A single address matches when it falls inside a prefix. A CIDR matches only when the whole range is inside a prefix. An empty match list means the query is not in the published AWS ranges.',
+    description: 'Returns the published AWS prefixes that contain the address or CIDR, most specific first, with the most specific one as bestMatch. For a CIDR it also returns the published prefixes that fall inside the range (contained, up to 100). found is false only when nothing contains or falls inside the query. IPv4-mapped IPv6 (::ffff:a.b.c.d) is looked up as IPv4.',
     parameters: [
       { name: 'q', description: 'IPv4 address, IPv6 address, or CIDR prefix', required: true, type: 'string', example: '3.5.16.1' },
     ],
@@ -414,7 +414,7 @@ export default function ApiDocsPage() {
                 <h3 className="font-semibold">Rate Limited</h3>
               </div>
               <p className="text-sm text-muted-foreground">
-                50 requests/hour for general API, 10/min for lookup and search, 5/10min for exports to ensure fair usage.
+                Per IP: 50 requests/hour for the full dataset, 10/min for lookup and search, 5/10min for exports. Limits are best effort and may vary across server instances.
               </p>
             </div>
             

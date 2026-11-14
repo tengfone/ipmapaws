@@ -110,23 +110,115 @@ const swaggerDefinition = {
       },
       LookupResponse: {
         type: 'object',
-        required: ['query', 'found', 'matches'],
+        required: [
+          'query',
+          'version',
+          'found',
+          'bestMatch',
+          'containing',
+          'contained',
+          'containedTotal',
+          'containedTruncated',
+          'syncToken',
+          'createDate',
+        ],
         properties: {
           query: {
             type: 'string',
-            description: 'Normalized IP address or network CIDR from the query',
+            description:
+              'The query in canonical form: RFC 5952 for IPv6 (IPv4-mapped addresses dotted), host bits cleared for CIDRs',
+            example: '3.5.16.1',
+          },
+          version: {
+            type: 'string',
+            enum: ['ipv4', 'ipv6'],
+            description:
+              'Address family the lookup ran against. An IPv4-mapped IPv6 query runs as ipv4.',
+            example: 'ipv4',
+          },
+          mappedIPv4: {
+            type: 'string',
+            description:
+              'Only present for an IPv4-mapped IPv6 query (::ffff:a.b.c.d): the IPv4 address or CIDR it was looked up as',
             example: '3.5.16.1',
           },
           found: {
             type: 'boolean',
-            description: 'True when at least one published prefix contains the query',
+            description:
+              'True when at least one published prefix contains the query or falls inside it',
             example: true,
           },
-          matches: {
+          bestMatch: {
+            description:
+              'The most specific published prefix that contains the whole query (first item of containing), or null',
+            nullable: true,
+            allOf: [{ $ref: '#/components/schemas/AWSIPRange' }],
+          },
+          containing: {
             type: 'array',
-            description: 'Published prefixes that contain the query. Empty when found is false.',
+            description:
+              'Published prefixes that contain the whole query, most specific first (longest prefix, then a named service before AMAZON, then region)',
             items: { $ref: '#/components/schemas/AWSIPRange' },
           },
+          contained: {
+            type: 'array',
+            description:
+              'Published prefixes strictly inside the queried CIDR, in address order, at most 100',
+            items: { $ref: '#/components/schemas/AWSIPRange' },
+          },
+          containedTotal: {
+            type: 'integer',
+            description: 'Number of published prefixes inside the queried CIDR before the cap',
+            example: 0,
+          },
+          containedTruncated: {
+            type: 'boolean',
+            description: 'True when contained was cut off at 100',
+            example: false,
+          },
+          syncToken: {
+            type: 'string',
+            description: 'syncToken of the ip-ranges.json version the lookup ran against',
+            example: '1700000000',
+          },
+          createDate: {
+            type: 'string',
+            description: 'createDate of the ip-ranges.json version the lookup ran against',
+            example: '2023-11-14-22-13-20',
+          },
+        },
+        example: {
+          query: '3.5.16.1',
+          version: 'ipv4',
+          found: true,
+          bestMatch: {
+            prefix: '3.5.16.0/21',
+            region: 'eu-west-1',
+            service: 'S3',
+            network_border_group: 'eu-west-1',
+            type: 'ipv4',
+          },
+          containing: [
+            {
+              prefix: '3.5.16.0/21',
+              region: 'eu-west-1',
+              service: 'S3',
+              network_border_group: 'eu-west-1',
+              type: 'ipv4',
+            },
+            {
+              prefix: '3.5.16.0/21',
+              region: 'eu-west-1',
+              service: 'AMAZON',
+              network_border_group: 'eu-west-1',
+              type: 'ipv4',
+            },
+          ],
+          contained: [],
+          containedTotal: 0,
+          containedTruncated: false,
+          syncToken: '1700000000',
+          createDate: '2023-11-14-22-13-20',
         },
       },
       SearchResponse: {
@@ -216,7 +308,8 @@ const swaggerDefinition = {
       LookupQuery: {
         name: 'q',
         in: 'query',
-        description: 'IPv4 address, IPv6 address, IPv4 CIDR, or IPv6 CIDR to look up',
+        description:
+          'IPv4 address, IPv6 address, IPv4 CIDR, or IPv6 CIDR to look up (max 128 characters). IPv4-mapped IPv6 is looked up as IPv4; brackets and IPv6 zone ids are stripped; leading zeros in IPv4 octets or prefix lengths are rejected.',
         required: true,
         schema: {
           type: 'string',
@@ -346,8 +439,27 @@ const swaggerDefinition = {
           },
         },
       },
+      InternalError: {
+        description: 'Unexpected server error. The message is generic; details are only logged server-side.',
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/Error' },
+            example: {
+              error: 'Failed to look up AWS IP ranges',
+              message: 'An unexpected error occurred. Please try again later.',
+              timestamp: '2024-01-01T00:00:00.000Z',
+            },
+          },
+        },
+      },
       ServiceUnavailable: {
         description: 'Service temporarily unavailable (data syncing)',
+        headers: {
+          'Retry-After': {
+            description: 'Seconds to wait before retrying',
+            schema: { type: 'integer' },
+          },
+        },
         content: {
           'application/json': {
             schema: { $ref: '#/components/schemas/Error' },
