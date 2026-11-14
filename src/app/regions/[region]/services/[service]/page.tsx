@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import RegionServicePage from '@/components/pages/RegionServicePage';
-import { fetchAWSIPRanges, extractRegions, extractServices } from '@/lib/api';
+import { extractRegions, extractServices } from '@/lib/api';
+import { getAWSIPRangesServer } from '@/lib/server-data';
 
 interface Props {
   params: Promise<{
@@ -13,7 +14,7 @@ interface Props {
 // Generate static params for all region/service combinations
 export async function generateStaticParams() {
   try {
-    const data = await fetchAWSIPRanges();
+    const data = await getAWSIPRangesServer();
     const params: { region: string; service: string }[] = [];
     
     // Create a map of regions to their services
@@ -56,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = decodeURIComponent(encodedService);
   
   try {
-    const data = await fetchAWSIPRanges();
+    const data = await getAWSIPRangesServer();
     
     // Filter prefixes for this region/service combination
     const ipv4Prefixes = data.prefixes.filter(p => p.region === region && p.service === service);
@@ -119,7 +120,7 @@ export default async function Page({ params }: Props) {
   const service = decodeURIComponent(encodedService);
   
   try {
-    const data = await fetchAWSIPRanges();
+    const data = await getAWSIPRangesServer();
     const regions = extractRegions(data);
     const services = extractServices(data);
     

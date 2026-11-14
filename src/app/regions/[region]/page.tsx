@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import RegionPage from '@/components/pages/RegionPage';
-import { fetchAWSIPRanges, extractRegions } from '@/lib/api';
+import { extractRegions } from '@/lib/api';
+import { getAWSIPRangesServer } from '@/lib/server-data';
 
 interface Props {
   params: Promise<{
@@ -12,7 +13,7 @@ interface Props {
 // Generate static params for all AWS regions
 export async function generateStaticParams() {
   try {
-    const data = await fetchAWSIPRanges();
+    const data = await getAWSIPRangesServer();
     const regions = extractRegions(data);
     
     return regions.map((region) => ({
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const region = decodeURIComponent(encodedRegion);
   
   try {
-    const data = await fetchAWSIPRanges();
+    const data = await getAWSIPRangesServer();
     const regions = extractRegions(data);
     
     if (!regions.includes(region)) {
@@ -72,7 +73,7 @@ export default async function Page({ params }: Props) {
   const region = decodeURIComponent(encodedRegion);
   
   try {
-    const data = await fetchAWSIPRanges();
+    const data = await getAWSIPRangesServer();
     const regions = extractRegions(data);
     
     if (!regions.includes(region)) {
