@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, FileText, Loader2 } from 'lucide-react';
+import { Download, FileText, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ExportButtonProps, ExportResponse, CombinedPrefix } from '@/types';
 import { exportToCSV, formatNumber } from '@/lib/utils';
@@ -72,7 +72,7 @@ export function ExportButton({
         className="flex items-center space-x-2"
       >
         {isExporting ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <LoaderCircle className="h-4 w-4 animate-spin" />
         ) : (
           <Download className="h-4 w-4" />
         )}

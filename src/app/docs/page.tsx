@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { FileText, ArrowLeft, Globe, Shield, Zap, ExternalLink, Copy, CheckCircle, Play, X, Loader2, RotateCcw, Clock } from 'lucide-react';
+import { FileText, ArrowLeft, Globe, Shield, Zap, ExternalLink, Copy, CircleCheckBig, Play, X, LoaderCircle, RotateCcw, Clock } from 'lucide-react';
 
 interface ApiEndpoint {
   method: string;
@@ -445,7 +445,7 @@ export default function ApiDocsPage() {
               title="Copy base URL"
             >
               {copiedUrl === baseUrl ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CircleCheckBig className="h-4 w-4 text-green-600" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}
@@ -539,7 +539,7 @@ export default function ApiDocsPage() {
                         title="Copy cURL command"
                       >
                         {copiedUrl === curlCommand ? (
-                          <CheckCircle className="h-4 w-4 text-green-400" />
+                          <CircleCheckBig className="h-4 w-4 text-green-400" />
                         ) : (
                           <Copy className="h-4 w-4" />
                         )}
@@ -562,7 +562,7 @@ export default function ApiDocsPage() {
                       }`}
                     >
                       {result?.isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
                       ) : !canRequest ? (
                         <Clock className="h-4 w-4" />
                       ) : (

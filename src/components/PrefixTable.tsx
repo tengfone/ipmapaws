@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronUp, ChevronDown, Copy, CheckCircle } from 'lucide-react';
+import { ChevronUp, ChevronDown, Copy, CircleCheckBig } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import { CombinedPrefix, SortField, SortDirection } from '@/types';
@@ -142,7 +142,7 @@ export function PrefixTable({
                       title={`Copy ${prefix.prefix}`}
                     >
                       {copiedPrefix === prefix.prefix ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CircleCheckBig className="h-4 w-4 text-green-600" />
                       ) : (
                         <Copy className="h-4 w-4" />
                       )}

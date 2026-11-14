@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Ellipsis } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
 
@@ -93,7 +93,7 @@ export function Pagination({
             if (page === '...') {
               return (
                 <span key={`dots-${index}`} className="px-2">
-                  <MoreHorizontal className="h-4 w-4" />
+                  <Ellipsis className="h-4 w-4" />
                 </span>
               );
             }

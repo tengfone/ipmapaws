@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { CheckCircle, Copy, Search } from 'lucide-react';
+import { CircleCheckBig, Copy, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAWSIPRanges } from '@/hooks/useAWSIPRanges';
@@ -129,7 +129,7 @@ export function PrefixLookup() {
                 }
               >
                 {copiedKey === summaryKey ? (
-                  <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                  <CircleCheckBig className="mr-2 h-4 w-4 text-green-600" />
                 ) : (
                   <Copy className="mr-2 h-4 w-4" />
                 )}
@@ -143,7 +143,7 @@ export function PrefixLookup() {
               onClick={() => handleCopy(cidrKey, match.prefix)}
             >
               {copiedKey === cidrKey ? (
-                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                <CircleCheckBig className="mr-2 h-4 w-4 text-green-600" />
               ) : (
                 <Copy className="mr-2 h-4 w-4" />
               )}
