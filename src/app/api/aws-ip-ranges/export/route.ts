@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCachedData } from '@/lib/cache';
+import { getAWSIPRangesServer } from '@/lib/server-data';
 import { transformAWSIPRanges, filterPrefixes, sortPrefixes } from '@/lib/api';
 import { SortField, SortDirection } from '@/types';
 import { exportRateLimit } from '@/lib/rate-limit';
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   return withCors(await exportRateLimit(request, async () => {
   try {
     // Get cached AWS data
-    const awsData = await getCachedData();
+    const awsData = await getAWSIPRangesServer().catch(() => null);
     
     if (!awsData) {
       return NextResponse.json(

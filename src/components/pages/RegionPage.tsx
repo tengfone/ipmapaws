@@ -17,7 +17,7 @@ interface RegionPageProps {
 }
 
 export default function RegionPage({ region }: RegionPageProps) {
-  const { prefixes, count, isLoading, error } = useFilteredIPRanges(region);
+  const { prefixes, count, lastUpdated, isLoading, error } = useFilteredIPRanges(region);
   
   // State for additional filtering within the region
   const [filters, setFilters] = useState<FilterOptions>({
@@ -158,7 +158,7 @@ export default function RegionPage({ region }: RegionPageProps) {
       </div>
 
       {/* Data Status */}
-      <DataStatus />
+      <DataStatus lastUpdated={lastUpdated} />
 
       {/* Filter Controls - Services only since region is locked */}
       <FilterControls

@@ -17,7 +17,7 @@ interface RegionServicePageProps {
 }
 
 export default function RegionServicePage({ region, service }: RegionServicePageProps) {
-  const { prefixes, count, isLoading, error } = useFilteredIPRanges(region, service);
+  const { prefixes, count, lastUpdated, isLoading, error } = useFilteredIPRanges(region, service);
   
   // Separate state for search input to avoid lag
   const [searchInput, setSearchInput] = useState('');
@@ -172,7 +172,7 @@ export default function RegionServicePage({ region, service }: RegionServicePage
       {count > 0 ? (
         <>
           {/* Data Status */}
-          <DataStatus />
+          <DataStatus lastUpdated={lastUpdated} />
 
           {/* Simplified Filter Controls - Only search and IP type since region/service are locked */}
           <div className="bg-card rounded-lg border p-6">

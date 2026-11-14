@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCachedData } from '@/lib/cache';
+import { getAWSIPRangesServer } from '@/lib/server-data';
 import { startBackgroundSync } from '@/lib/background-sync';
 import { apiRateLimit } from '@/lib/rate-limit';
 import { corsPreflight, withCors } from '@/lib/cors';
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Try to get cached data first
-    let data = await getCachedData();
+    let data = await getAWSIPRangesServer().catch(() => null);
     
     // If no cached data and in serverless environment, try to fetch directly
     if (!data && process.env.VERCEL) {

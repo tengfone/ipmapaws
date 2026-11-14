@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCachedData } from '@/lib/cache';
+import { getAWSIPRangesServer } from '@/lib/server-data';
 import { corsPreflight, withCors } from '@/lib/cors';
 import {
   getPrefixIndex,
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      const awsData = await getCachedData();
+      const awsData = await getAWSIPRangesServer().catch(() => null);
       if (!awsData) {
         return errorResponse(
           503,

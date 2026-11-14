@@ -4,8 +4,8 @@
 import { NextRequest } from 'next/server';
 import { ipRangesFixture } from '@/__fixtures__/ip-ranges';
 
-jest.mock('@/lib/cache', () => ({
-  getCachedData: jest.fn(),
+jest.mock('@/lib/server-data', () => ({
+  getAWSIPRangesServer: jest.fn(),
 }));
 
 type RouteModule = typeof import('@/app/api/aws-ip-ranges/lookup/route');
@@ -31,7 +31,7 @@ beforeEach(() => {
   jest.spyOn(console, 'error').mockImplementation(() => {});
   // Fresh module state (rate-limit counters, index cache) for every test.
   route = require('@/app/api/aws-ip-ranges/lookup/route');
-  getCachedData = require('@/lib/cache').getCachedData;
+  getCachedData = require('@/lib/server-data').getAWSIPRangesServer;
   getCachedData.mockReset();
   getCachedData.mockResolvedValue(ipRangesFixture);
 });
@@ -158,14 +158,13 @@ describe('GET /api/aws-ip-ranges/lookup', () => {
     expect(body.error).toBe('Data not available yet');
   });
 
-  it('returns a generic 500 with CORS when the data store throws', async () => {
+  it('returns 503 without leaking details when loading the data fails', async () => {
     getCachedData.mockRejectedValue(new Error('secret internal detail'));
     const response = await route.GET(request('3.5.16.1'));
     const body = await response.json();
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(503);
     expectCors(response);
-    expect(body.error).toBe('Failed to look up AWS IP ranges');
     expect(JSON.stringify(body)).not.toContain('secret internal detail');
   });
 

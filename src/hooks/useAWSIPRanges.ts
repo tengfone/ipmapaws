@@ -178,7 +178,7 @@ export function useAWSIPRangesSearch(
  * since the filtering is simpler and already quite fast
  */
 export function useFilteredIPRanges(region?: string, service?: string) {
-  const { combinedPrefixes, isLoading, error } = useAWSIPRanges();
+  const { combinedPrefixes, stats, isLoading, error } = useAWSIPRanges();
 
   const filteredPrefixes = combinedPrefixes.filter((prefix) => {
     if (region && prefix.region !== region) return false;
@@ -189,6 +189,7 @@ export function useFilteredIPRanges(region?: string, service?: string) {
   return {
     prefixes: filteredPrefixes,
     count: filteredPrefixes.length,
+    lastUpdated: stats?.lastUpdated,
     isLoading,
     error,
   };
