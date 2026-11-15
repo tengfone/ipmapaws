@@ -1,97 +1,84 @@
 import React from 'react';
-import { Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DataStatusProps {
+  /** AWS createDate, e.g. "2026-11-14-17-37-04". */
   lastUpdated?: string;
+  /** AWS syncToken, shown when given. */
+  syncToken?: string;
   className?: string;
 }
 
-export function DataStatus({ lastUpdated, className }: DataStatusProps) {
-  // Read the clock once per mount, not during every render (render must stay pure).
-  const [now] = React.useState(() => Date.now());
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
-  const formatAWSDate = (dateString: string) => {
-    try {
-      // AWS format: "2025-07-15-23-33-17"
-      const parts = dateString.split('-');
-      if (parts.length === 6) {
-        const [year, month, day, hour, minute, second] = parts;
-        const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}Z`);
-        return {
-          formatted: date.toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            timeZoneName: 'short',
-            timeZone: 'UTC'
-          }),
-          iso: date.toISOString(),
-          age: now - date.getTime()
-        };
-      }
-      return {
-        formatted: dateString,
-        iso: dateString,
-        age: 0
-      };
-    } catch {
-      return {
-        formatted: dateString || 'Unknown',
-        iso: dateString || '',
-        age: 0
-      };
-    }
+/**
+ * Formats AWS's createDate ("YYYY-MM-DD-hh-mm-ss", UTC) without the runtime's
+ * locale or timezone, so server and browser render the same text.
+ */
+export function formatAWSDate(value: string): { text: string; iso?: string } {
+  const parts = value.split('-');
+  if (parts.length !== 6 || parts.some((p) => !/^\d+$/.test(p))) {
+    return { text: value };
+  }
+  const [year, month, day, hour, minute] = parts;
+  const monthName = MONTHS[Number(month) - 1];
+  if (!monthName) return { text: value };
+  return {
+    text: `${Number(day)} ${monthName} ${year}, ${hour}:${minute} UTC`,
+    iso: `${year}-${month}-${day}T${hour}:${minute}:${parts[5]}Z`,
   };
+}
 
-  const formatAge = (milliseconds: number) => {
-    const hours = Math.floor(milliseconds / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
-    
-    if (days > 0) {
-      return `${days} day${days > 1 ? 's' : ''} ago`;
-    }
-    if (hours > 0) {
-      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    }
-    const minutes = Math.floor(milliseconds / (1000 * 60));
-    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-  };
-
+/** One line of provenance: when AWS published the data this page shows. */
+export function DataStatus({
+  lastUpdated,
+  syncToken,
+  className,
+}: DataStatusProps) {
   if (!lastUpdated) {
     return (
-      <div className={cn('flex items-center justify-center p-4 bg-muted/30 rounded-lg border', className)}>
-        <div className="flex items-center space-x-2 text-muted-foreground">
-          <Clock className="h-4 w-4" />
-          <span className="text-sm">Loading AWS IP ranges data...</span>
-        </div>
-      </div>
+      <p className={cn('text-[13px] text-ink-2', className)} aria-live="polite">
+        Reading AWS&apos;s ip-ranges.json…
+      </p>
     );
   }
 
-  const dateInfo = formatAWSDate(lastUpdated);
+  const date = formatAWSDate(lastUpdated);
 
   return (
-    <div className={cn('flex items-center justify-between p-4 bg-muted/30 rounded-lg border', className)}>
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <Clock className="h-4 w-4 text-green-600" />
-          <span className="text-sm font-medium">AWS IP Ranges</span>
-        </div>
-        
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <span>Last updated by AWS:</span>
-          <span className="font-mono text-foreground">
-            {dateInfo.formatted}
-          </span>
-          <span className="text-xs">
-            ({formatAge(dateInfo.age)})
-          </span>
-        </div>
-      </div>
-    </div>
+    <p className={cn('text-[13px] text-ink-2', className)}>
+      AWS data from{' '}
+      <time dateTime={date.iso} className="font-mono text-ink">
+        {date.text}
+      </time>
+      {syncToken && (
+        <>
+          {' '}
+          · sync token <span className="font-mono text-ink">{syncToken}</span>
+        </>
+      )}{' '}
+      · refreshed hourly from{' '}
+      <a
+        href="https://ip-ranges.amazonaws.com/ip-ranges.json"
+        target="_blank"
+        rel="noreferrer"
+        className="font-mono text-ink underline decoration-sage"
+      >
+        ip-ranges.json
+      </a>
+    </p>
   );
-} 
+}

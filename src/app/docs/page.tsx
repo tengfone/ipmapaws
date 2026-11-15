@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
-import { FileText, ArrowLeft, Globe, Shield, Zap, ExternalLink, Copy, CircleCheckBig, Play, X, LoaderCircle, RotateCcw, Clock } from 'lucide-react';
+import { FileText, ExternalLink, Play, X, LoaderCircle, RotateCcw, Clock } from 'lucide-react';
 
 interface ApiEndpoint {
   method: string;
@@ -305,15 +304,18 @@ export default function ApiDocsPage() {
     });
   };
 
-  const renderParameterInput = (endpoint: ApiEndpoint, param: any) => {
+  const renderParameterInput = (endpoint: ApiEndpoint, param: any, inputId: string) => {
     const value = parameterValues[endpoint.path]?.[param.name] || '';
+    const fieldClass =
+      'h-9 w-full min-w-0 rounded-md border border-rule bg-paper px-2.5 font-mono text-[13px] text-ink hover:border-ink-2 focus-visible:border-ink';
     
     if (param.type === 'boolean') {
       return (
         <select
           value={value}
           onChange={(e) => updateParameterValue(endpoint.path, param.name, e.target.value)}
-          className="w-full px-3 py-2 text-sm border rounded-md bg-background"
+          id={inputId}
+          className={fieldClass}
         >
           <option value="">Select...</option>
           <option value="true">true</option>
@@ -327,7 +329,8 @@ export default function ApiDocsPage() {
         <select
           value={value}
           onChange={(e) => updateParameterValue(endpoint.path, param.name, e.target.value)}
-          className="w-full px-3 py-2 text-sm border rounded-md bg-background"
+          id={inputId}
+          className={fieldClass}
         >
           <option value="">Select...</option>
           {param.enum.map((option: string) => (
@@ -343,334 +346,288 @@ export default function ApiDocsPage() {
         value={value}
         onChange={(e) => updateParameterValue(endpoint.path, param.name, e.target.value)}
         placeholder={param.example || ''}
-        className="w-full px-3 py-2 text-sm border rounded-md bg-background"
+        id={inputId}
+          className={fieldClass}
       />
     );
   };
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+      <div className="page pt-10">
+        <p className="text-sm text-ink-2" aria-live="polite">
+          Loading the API specification…
+        </p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
-          <h1 className="text-lg font-semibold text-destructive mb-2">
-            Error Loading API Documentation
-          </h1>
-          <p className="text-sm text-destructive/80">{error}</p>
+      <div className="page pt-10">
+        <div role="alert" className="rounded-lg border border-danger px-4 py-3 text-sm">
+          <h1 className="font-semibold text-danger">API documentation could not be loaded</h1>
+          <p className="mt-1 text-ink">{error}. Reload the page to try again.</p>
         </div>
       </div>
     );
   }
 
+  const codeBlock =
+    'overflow-x-auto rounded-lg border border-rule bg-paper px-4 py-3 font-mono text-[13px] text-ink';
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-muted/30">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center space-x-4 mb-4">
-            <Link
-              href="/"
-              className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+    <div className="page pt-8 sm:pt-10">
+      <div className="grid gap-x-12 gap-y-6 lg:grid-cols-12">
+        <div className="min-w-0 lg:col-span-7">
+          <h1 className="text-[26px] font-bold leading-[1.2] tracking-[-0.015em] text-ink sm:text-[28px]">
+            IPMapAWS REST API
+          </h1>
+          <p className="mt-3 max-w-[64ch] text-ink-2">
+            The same data and lookup as the site, over HTTP: look up which AWS prefix contains an IP
+            or CIDR, search and filter the published ranges, export every matching row, or download
+            the raw dataset. Free, no authentication, CORS enabled for any origin, described by an{' '}
+            <a
+              href="/api/docs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-ink underline decoration-sage underline-offset-4"
             >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to App</span>
-            </Link>
-          </div>
-          
-          <div className="flex items-center space-x-3 mb-4">
-            <FileText className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-3xl font-bold">IPMapAWS API Documentation</h1>
-              <p className="text-muted-foreground">
-                Comprehensive API for accessing AWS IP ranges with search, filtering, and export capabilities
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-card border rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <Globe className="h-5 w-5 text-blue-600" />
-                <h3 className="font-semibold">Public API</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Free public access to AWS IP ranges data with comprehensive filtering and search capabilities.
-              </p>
-            </div>
-            
-            <div className="bg-card border rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <Shield className="h-5 w-5 text-green-600" />
-                <h3 className="font-semibold">Rate Limited</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Per IP: 50 requests/hour for the full dataset, 10/min for lookup and search, 5/10min for exports. Limits are best effort and may vary across server instances.
-              </p>
-            </div>
-            
-            <div className="bg-card border rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <Zap className="h-5 w-5 text-orange-600" />
-                <h3 className="font-semibold">Real-time Data</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Always up-to-date AWS IP ranges sourced directly from Amazon&apos;s official endpoint.
-              </p>
-            </div>
-          </div>
+              OpenAPI 3.0 spec
+            </a>
+            .
+          </p>
         </div>
-      </div>
-
-      {/* Base URL Info */}
-      <div className="container mx-auto px-4 py-4">
-        <div className="bg-muted/50 rounded-lg p-4 mb-6">
-          <h2 className="font-semibold mb-2">Base URL</h2>
-          <div className="flex items-center space-x-2">
-            <code className="text-sm bg-card px-2 py-1 rounded-sm border flex-1">
-              {baseUrl}
-            </code>
+        <dl className="grid min-w-0 grid-cols-1 gap-y-3 border-t border-rule pt-4 text-sm sm:grid-cols-[9rem_1fr] lg:col-span-5 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-1">
+          <dt className="text-ink-2">Base URL</dt>
+          <dd className="flex min-w-0 items-center gap-3">
+            <code className="truncate font-mono text-[13px] text-ink">{baseUrl}</code>
             <button
+              type="button"
               onClick={() => copyToClipboard(baseUrl)}
-              className="p-2 hover:bg-muted rounded-md transition-colors"
-              title="Copy base URL"
+              className="shrink-0 rounded-sm text-[13px] font-semibold text-ink underline decoration-sage underline-offset-4"
             >
-              {copiedUrl === baseUrl ? (
-                <CircleCheckBig className="h-4 w-4 text-green-600" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
+              {copiedUrl === baseUrl ? 'Copied' : 'Copy'}
             </button>
-          </div>
-        </div>
+          </dd>
+          <dt className="text-ink-2">Rate limits, per IP</dt>
+          <dd className="text-ink">
+            50/hour for the full dataset, 10/minute for lookup and search, 5 per 10 minutes for
+            export. Best effort; limits may vary across server instances.
+          </dd>
+          <dt className="text-ink-2">Source</dt>
+          <dd className="text-ink">
+            AWS&apos;s{' '}
+            <a
+              href="https://ip-ranges.amazonaws.com/ip-ranges.json"
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono underline decoration-sage underline-offset-4"
+            >
+              ip-ranges.json
+            </a>
+            , read directly and cached for an hour.
+          </dd>
+        </dl>
       </div>
 
-      {/* API Endpoints */}
-      <div className="container mx-auto px-4 pb-8">
-        <div className="space-y-6">
-          {API_ENDPOINTS.map((endpoint, index) => {
-            const result = apiResults[endpoint.path];
-            const customUrl = buildUrlFromParameters(endpoint);
-            const curlCommand = `curl "${customUrl}"`;
-            const { canRequest, remainingTime } = canMakeRequest(endpoint.path);
-            
-            return (
-              <div key={index} className="bg-card border rounded-lg overflow-hidden">
-                {/* Endpoint Header */}
-                <div className="border-b p-6 bg-muted/30">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <span className={`px-2 py-1 rounded-sm text-xs font-mono font-medium ${
-                        endpoint.method === 'GET' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {endpoint.method}
-                      </span>
-                      <code className="text-sm font-mono">{endpoint.path}</code>
-                    </div>
-                    <div className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-sm">
-                      {endpoint.rateLimit}
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">{endpoint.summary}</h3>
-                  <p className="text-muted-foreground">{endpoint.description}</p>
+      <nav aria-label="Endpoints" className="mt-10 border-t border-ink pt-4">
+        <ul className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[13px]">
+          {API_ENDPOINTS.map((endpoint) => (
+            <li key={endpoint.path}>
+              <a
+                href={`#${endpoint.path.replace(/\//g, '-').replace(/^-/, '')}`}
+                className="text-ink underline decoration-sage underline-offset-4 hover:decoration-ink"
+              >
+                {endpoint.path}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="mt-2">
+        {API_ENDPOINTS.map((endpoint) => {
+          const result = apiResults[endpoint.path];
+          const customUrl = buildUrlFromParameters(endpoint);
+          const curlCommand = `curl "${customUrl}"`;
+          const { canRequest, remainingTime } = canMakeRequest(endpoint.path);
+          const anchor = endpoint.path.replace(/\//g, '-').replace(/^-/, '');
+
+          return (
+            <section
+              key={endpoint.path}
+              id={anchor}
+              aria-labelledby={`${anchor}-title`}
+              className="scroll-mt-6 border-b border-rule py-8"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="flex min-w-0 items-center gap-3">
+                  <span className="rounded-sm border border-sage px-1.5 py-0.5 font-mono text-[12px] font-semibold text-sage-ink">
+                    {endpoint.method}
+                  </span>
+                  <code className="break-all font-mono text-[15px] font-semibold text-ink">
+                    {endpoint.path}
+                  </code>
+                </p>
+                <p className="font-mono text-[12px] text-ink-2">{endpoint.rateLimit}</p>
+              </div>
+              <h2 id={`${anchor}-title`} className="mt-3 text-lg font-bold tracking-[-0.01em] text-ink">
+                {endpoint.summary}
+              </h2>
+              <p className="mt-1 max-w-[72ch] text-ink-2">{endpoint.description}</p>
+
+              <div className="mt-6 grid gap-x-12 gap-y-6 lg:grid-cols-12">
+                <div className="min-w-0 lg:col-span-6">
+                  {endpoint.parameters && endpoint.parameters.length > 0 ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-ink">Parameters</h3>
+                        <button
+                          type="button"
+                          onClick={() => resetParameters(endpoint)}
+                          className="inline-flex items-center gap-1 rounded-sm text-[13px] text-ink-2 hover:text-ink"
+                        >
+                          <RotateCcw className="size-3.5" strokeWidth={1.75} aria-hidden="true" />
+                          Reset to defaults
+                        </button>
+                      </div>
+                      <div className="mt-2 border-t border-rule">
+                        {endpoint.parameters.map((param) => {
+                          const inputId = `${anchor}-${param.name}`;
+                          return (
+                            <div
+                              key={param.name}
+                              className="grid gap-x-4 gap-y-2 border-b border-rule-2 py-3 sm:grid-cols-[minmax(0,1fr)_12rem]"
+                            >
+                              <div className="min-w-0">
+                                <label htmlFor={inputId} className="flex items-baseline gap-2">
+                                  <code className="font-mono text-[13px] font-semibold text-ink">
+                                    {param.name}
+                                  </code>
+                                  <span className="text-[12px] text-ink-2">
+                                    {param.type}
+                                    {param.required ? ', required' : ''}
+                                  </span>
+                                </label>
+                                <p className="mt-0.5 text-[13px] text-ink-2">{param.description}</p>
+                              </div>
+                              {renderParameterInput(endpoint, param, inputId)}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-ink-2">No parameters.</p>
+                  )}
                 </div>
 
-                {/* Parameters */}
-                {endpoint.parameters && endpoint.parameters.length > 0 && (
-                  <div className="p-6 border-b">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-semibold">Parameters</h4>
-                      <button
-                        onClick={() => resetParameters(endpoint)}
-                        className="inline-flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                        title="Reset to defaults"
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                        <span>Reset</span>
-                      </button>
-                    </div>
-                    <div className="space-y-4">
-                      {endpoint.parameters.map((param, paramIndex) => (
-                        <div key={paramIndex} className="grid grid-cols-1 lg:grid-cols-5 gap-4 p-4 bg-muted/20 rounded-lg">
-                          <div className="lg:col-span-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <code className="text-sm font-mono text-primary">{param.name}</code>
-                              {param.required && <span className="text-red-500">*</span>}
-                            </div>
-                            <div className="text-xs text-muted-foreground">{param.type}</div>
-                          </div>
-                          <div className="lg:col-span-2">
-                            <div className="text-sm mb-2">{param.description}</div>
-                            {param.example && (
-                              <div className="text-xs text-muted-foreground">
-                                Default: <code className="bg-muted px-1 rounded-sm">{param.example}</code>
-                              </div>
-                            )}
-                          </div>
-                          <div className="lg:col-span-2">
-                            {renderParameterInput(endpoint, param)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Example Request & Try It */}
-                <div className="p-6">
-                  <h4 className="font-semibold mb-4">Test Request</h4>
-                  
-                  {/* cURL Command */}
-                  <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-gray-500"># cURL</span>
-                      <button
-                        onClick={() => copyToClipboard(curlCommand)}
-                        className="text-gray-400 hover:text-white transition-colors"
-                        title="Copy cURL command"
-                      >
-                        {copiedUrl === curlCommand ? (
-                          <CircleCheckBig className="h-4 w-4 text-green-400" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                    <div className="break-all">{curlCommand}</div>
-                  </div>
-
-                  {/* Try It Button */}
-                  <div className="flex items-center space-x-4 mb-4">
+                <div className="min-w-0 lg:col-span-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-ink">Request</h3>
                     <button
+                      type="button"
+                      onClick={() => copyToClipboard(curlCommand)}
+                      className="rounded-sm text-[13px] font-semibold text-ink underline decoration-sage underline-offset-4"
+                    >
+                      {copiedUrl === curlCommand ? 'Copied' : 'Copy cURL'}
+                    </button>
+                  </div>
+                  <pre className={`mt-2 whitespace-pre-wrap break-all ${codeBlock}`}>{curlCommand}</pre>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+                    <button
+                      type="button"
                       onClick={() => testEndpoint(endpoint)}
                       disabled={result?.isLoading || !canRequest}
-                      className={`inline-flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                        !canRequest 
-                          ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                          : result?.isLoading
-                          ? 'bg-primary/50 text-primary-foreground cursor-not-allowed'
-                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      }`}
+                      className="inline-flex h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-semibold text-on-ink transition-colors hover:bg-ink/85 disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       {result?.isLoading ? (
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                        <LoaderCircle className="size-4 animate-spin" strokeWidth={1.75} aria-hidden="true" />
                       ) : !canRequest ? (
-                        <Clock className="h-4 w-4" />
+                        <Clock className="size-4" strokeWidth={1.75} aria-hidden="true" />
                       ) : (
-                        <Play className="h-4 w-4" />
+                        <Play className="size-4" strokeWidth={1.75} aria-hidden="true" />
                       )}
-                      <span>
-                        {result?.isLoading 
-                          ? 'Testing...' 
-                          : !canRequest 
+                      {result?.isLoading
+                        ? 'Sending…'
+                        : !canRequest
                           ? `Wait ${Math.ceil(remainingTime / 1000)}s`
-                          : 'Try this endpoint'
-                        }
-                      </span>
+                          : 'Send request'}
                     </button>
-                    
                     <a
                       href={customUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center space-x-2 text-primary hover:underline"
+                      className="inline-flex items-center gap-1 rounded-sm text-[13px] font-medium text-ink underline decoration-sage underline-offset-4"
                     >
-                      <span>Open in new tab</span>
-                      <ExternalLink className="h-4 w-4" />
+                      Open in new tab
+                      <ExternalLink className="size-3.5" strokeWidth={1.75} aria-hidden="true" />
                     </a>
-
-                    {!canRequest && (
-                      <div className="text-sm text-muted-foreground">
-                        Rate limited - please wait before testing again
-                      </div>
-                    )}
                   </div>
 
-                  {/* API Result Display */}
                   {result && (
-                    <div className="mt-4 border rounded-lg overflow-hidden">
-                      <div className="bg-muted/50 px-4 py-2 flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium">Response</span>
+                    <div className="mt-4" aria-live="polite">
+                      <div className="flex items-center justify-between">
+                        <p className="flex items-center gap-2 text-sm font-semibold text-ink">
+                          Response
                           {result.status && (
-                            <span className={`text-xs px-2 py-1 rounded-sm ${
-                              result.status < 400 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
+                            <span
+                              className={`rounded-sm border px-1.5 font-mono text-[12px] ${
+                                result.status < 400
+                                  ? 'border-sage text-sage-ink'
+                                  : 'border-danger text-danger'
+                              }`}
+                            >
                               {result.status}
                             </span>
                           )}
-                        </div>
+                        </p>
                         <button
+                          type="button"
                           onClick={() => clearResult(endpoint.path)}
-                          className="text-muted-foreground hover:text-foreground p-1"
-                          title="Clear result"
+                          className="inline-flex items-center gap-1 rounded-sm text-[13px] text-ink-2 hover:text-ink"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="size-3.5" strokeWidth={2} aria-hidden="true" />
+                          Clear
                         </button>
                       </div>
-                      
-                      <div className="p-4 bg-gray-900 text-green-400 font-mono text-sm max-h-96 overflow-auto">
-                        {result.error ? (
-                          <div className="text-red-400">Error: {result.error}</div>
-                        ) : (
-                          <pre>{JSON.stringify(result.response, null, 2)}</pre>
-                        )}
-                      </div>
+                      {result.error ? (
+                        <p role="alert" className="mt-2 rounded-lg border border-danger px-4 py-3 text-sm text-danger">
+                          {result.error}
+                        </p>
+                      ) : (
+                        <pre className={`mt-2 max-h-96 ${codeBlock}`}>
+                          {JSON.stringify(result.response, null, 2)}
+                        </pre>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        {/* JSON Spec Download */}
-        <div className="mt-8 bg-card border rounded-lg p-6">
-          <h3 className="font-semibold mb-4">OpenAPI Specification</h3>
-          <p className="text-muted-foreground mb-4">
-            Download the complete OpenAPI 3.0 specification for this API in JSON format.
-          </p>
-          <a
-            href="/api/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
-          >
-            <FileText className="h-4 w-4" />
-            <span>Download OpenAPI JSON</span>
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </div>
+            </section>
+          );
+        })}
       </div>
 
-      {/* Footer */}
-      <div className="border-t bg-muted/30">
-        <div className="container mx-auto px-4 py-6">
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
-              IPMapAWS API is free and open source. Data sourced from{' '}
-              <a
-                href="https://ip-ranges.amazonaws.com/ip-ranges.json"
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium underline underline-offset-4"
-              >
-                AWS IP ranges
-              </a>
-              .
-            </p>
-          </div>
-        </div>
-      </div>
+      <section aria-labelledby="spec-heading" className="mt-10">
+        <h2 id="spec-heading" className="text-lg font-bold tracking-[-0.01em] text-ink">
+          OpenAPI specification
+        </h2>
+        <p className="mt-1 text-ink-2">
+          The full OpenAPI 3.0 description of these endpoints, for code generators and API clients.
+        </p>
+        <a
+          href="/api/docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex h-10 items-center gap-2 rounded-md border border-ink px-4 text-sm font-semibold text-ink hover:bg-sage-tint"
+        >
+          <FileText className="size-4" strokeWidth={1.75} aria-hidden="true" />
+          OpenAPI JSON
+        </a>
+      </section>
     </div>
   );
-} 
+}

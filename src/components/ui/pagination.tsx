@@ -1,7 +1,6 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Ellipsis } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from './button';
 
 interface PaginationProps {
   currentPage: number;
@@ -13,6 +12,23 @@ interface PaginationProps {
   showInfo?: boolean;
 }
 
+type PageSlot = number | 'gap-start' | 'gap-end';
+
+function visiblePages(currentPage: number, totalPages: number): PageSlot[] {
+  const delta = 1;
+  const start = Math.max(2, currentPage - delta);
+  const end = Math.min(totalPages - 1, currentPage + delta);
+  const slots: PageSlot[] = [1];
+  if (start > 2) slots.push('gap-start');
+  for (let i = start; i <= end; i += 1) slots.push(i);
+  if (end < totalPages - 1) slots.push('gap-end');
+  if (totalPages > 1) slots.push(totalPages);
+  return slots;
+}
+
+const cell =
+  'inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 font-mono text-[13px] transition-colors';
+
 export function Pagination({
   currentPage,
   totalPages,
@@ -22,127 +38,103 @@ export function Pagination({
   className,
   showInfo = true,
 }: PaginationProps) {
-  // Calculate visible page numbers
-  const getVisiblePages = () => {
-    const delta = 2; // Number of pages to show on each side of current page
-    const range = [];
-    const rangeWithDots = [];
-
-    // Calculate start and end of the visible range
-    const start = Math.max(2, currentPage - delta);
-    const end = Math.min(totalPages - 1, currentPage + delta);
-
-    for (let i = start; i <= end; i++) {
-      range.push(i);
-    }
-
-    // Add first page
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
-    }
-
-    // Add range
-    rangeWithDots.push(...range);
-
-    // Add last page
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
-    }
-
-    return rangeWithDots;
-  };
-
-  const visiblePages = getVisiblePages();
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-
   if (totalPages <= 1) {
     return null;
   }
 
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
   return (
-    <div className={cn('flex items-center justify-between', className)}>
-      {/* Info text */}
+    <nav
+      aria-label="Pagination"
+      className={cn(
+        'flex flex-wrap items-center justify-between gap-3',
+        className
+      )}
+    >
       {showInfo && (
-        <div className="text-sm text-muted-foreground">
-          Showing {startItem.toLocaleString()} to {endItem.toLocaleString()} of{' '}
-          {totalItems.toLocaleString()} results
-        </div>
+        <p className="text-[13px] text-ink-2">
+          <span className="font-mono text-ink">
+            {startItem.toLocaleString('en-US')}–
+            {endItem.toLocaleString('en-US')}
+          </span>{' '}
+          of{' '}
+          <span className="font-mono text-ink">
+            {totalItems.toLocaleString('en-US')}
+          </span>
+        </p>
       )}
 
-      {/* Pagination controls */}
-      <div className="flex items-center space-x-2">
-        {/* Previous button */}
-        <Button
-          variant="outline"
-          size="sm"
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
           onClick={() => onPageChange(currentPage - 1)}
           aria-label="Previous page"
           disabled={currentPage === 1}
-          className="h-8 w-8 p-0"
+          className={cn(
+            cell,
+            'border border-rule hover:border-ink disabled:opacity-40 disabled:hover:border-rule'
+          )}
         >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
+          <ChevronLeft className="size-4" strokeWidth={1.75} />
+        </button>
 
-        {/* Page numbers */}
-        <div className="flex items-center space-x-1">
-          {visiblePages.map((page, index) => {
-            if (page === '...') {
-              return (
-                <span key={`dots-${index}`} className="px-2">
-                  <Ellipsis className="h-4 w-4" />
-                </span>
-              );
-            }
-
-            const pageNumber = page as number;
-            const isCurrentPage = pageNumber === currentPage;
-
+        {visiblePages(currentPage, totalPages).map((slot) => {
+          if (typeof slot !== 'number') {
             return (
-              <Button
-                key={pageNumber}
-                variant={isCurrentPage ? "default" : "outline"}
-                size="sm"
-                onClick={() => onPageChange(pageNumber)}
-                aria-label={`Page ${pageNumber}`}
-                aria-current={isCurrentPage ? 'page' : undefined}
-                className={cn(
-                  "h-8 w-8 p-0",
-                  isCurrentPage && "pointer-events-none"
-                )}
+              <span
+                key={slot}
+                className={cn(cell, 'hidden text-ink-2 sm:inline-flex')}
+                aria-hidden="true"
               >
-                {pageNumber}
-              </Button>
+                …
+              </span>
             );
-          })}
-        </div>
+          }
+          const isCurrent = slot === currentPage;
+          return (
+            <button
+              type="button"
+              key={slot}
+              onClick={() => onPageChange(slot)}
+              aria-label={`Page ${slot}`}
+              aria-current={isCurrent ? 'page' : undefined}
+              className={cn(
+                cell,
+                isCurrent
+                  ? 'pointer-events-none bg-ink text-on-ink'
+                  : 'hidden text-ink hover:bg-sage-tint sm:inline-flex'
+              )}
+            >
+              {slot}
+            </button>
+          );
+        })}
 
-        {/* Next button */}
-        <Button
-          variant="outline"
-          size="sm"
+        <button
+          type="button"
           onClick={() => onPageChange(currentPage + 1)}
           aria-label="Next page"
           disabled={currentPage === totalPages}
-          className="h-8 w-8 p-0"
+          className={cn(
+            cell,
+            'border border-rule hover:border-ink disabled:opacity-40 disabled:hover:border-rule'
+          )}
         >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+          <ChevronRight className="size-4" strokeWidth={1.75} />
+        </button>
       </div>
-    </div>
+    </nav>
   );
 }
 
 // Hook for pagination logic
 export function usePagination(totalItems: number, itemsPerPage: number = 50) {
   const [currentPage, setCurrentPage] = React.useState(1);
-  
+
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  
+
   // Reset to page 1 when total items change significantly. Adjusting state
   // during render (instead of in an effect) avoids an extra render pass.
   if (currentPage > totalPages && totalPages > 0) {
@@ -160,4 +152,4 @@ export function usePagination(totalItems: number, itemsPerPage: number = 50) {
     endIndex,
     itemsPerPage,
   };
-} 
+}

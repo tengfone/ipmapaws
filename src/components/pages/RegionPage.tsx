@@ -1,16 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useState, useMemo, useCallback, startTransition } from 'react';
-import { FilterControls } from '@/components/FilterControls';
-import { PrefixTable } from '@/components/PrefixTable';
-import { ExportSummary } from '@/components/ExportButton';
+import React, { useMemo } from 'react';
 import { DataStatus } from '@/components/DataStatus';
-import { usePagination } from '@/components/ui/pagination';
-import { useFilteredIPRanges, InitialFilteredData } from '@/hooks/useAWSIPRanges';
-import { FilterOptions, SortField, SortDirection } from '@/types';
-import { filterPrefixes, sortPrefixes } from '@/lib/api';
-import { copyToClipboard, debounce } from '@/lib/utils';
+import { LocalRegister } from '@/components/LocalRegister';
+import { ParcelStrip } from '@/components/ParcelStrip';
+import { Breadcrumbs, countVersions, PageError } from '@/components/PageParts';
+import {
+  useFilteredIPRanges,
+  InitialFilteredData,
+} from '@/hooks/useAWSIPRanges';
+import { buildFootprint } from '@/lib/plat';
 
 interface RegionPageProps {
   region: string;
@@ -18,203 +18,134 @@ interface RegionPageProps {
 }
 
 export default function RegionPage({ region, initialData }: RegionPageProps) {
-  const { prefixes, count, lastUpdated, isLoading, error } = useFilteredIPRanges(region, undefined, initialData);
-  
-  // State for additional filtering within the region
-  const [filters, setFilters] = useState<FilterOptions>({
-    regions: [region], // Pre-filtered to this region
-    services: [],
-    searchTerm: '',
-    includeIPv4: true,
-    includeIPv6: true,
-  });
-  
-  const [sortField, setSortField] = useState<SortField>('prefix');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [copiedPrefix, setCopiedPrefix] = useState<string | undefined>();
+  const { prefixes, count, lastUpdated, isLoading, error } =
+    useFilteredIPRanges(region, undefined, initialData);
 
-  // Get unique services for this region
-  const availableServices = useMemo(() => {
-    const services = new Set(prefixes.map(p => p.service));
-    return Array.from(services).sort();
+  const services = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of prefixes)
+      counts.set(p.service, (counts.get(p.service) ?? 0) + 1);
+    return Array.from(counts, ([service, n]) => ({ service, n })).sort((a, b) =>
+      a.service.localeCompare(b.service)
+    );
   }, [prefixes]);
-
-  // Optimized filter handler with startTransition
-  const debouncedSetFilters = useMemo(
-    () => debounce((newFilters: FilterOptions) => {
-      startTransition(() => {
-        setFilters(newFilters);
-      });
-    }, 150),
-    []
-  );
-
-  // Apply additional filtering and sorting
-  const filteredAndSortedPrefixes = useMemo(() => {
-    const filtered = filterPrefixes(prefixes, filters);
-    return sortPrefixes(filtered, sortField, sortDirection);
-  }, [prefixes, filters, sortField, sortDirection]);
-
-  // Pagination
-  const {
-    currentPage,
-    setCurrentPage,
-    itemsPerPage,
-  } = usePagination(filteredAndSortedPrefixes.length, 50);
-
-  // PrefixTable renders exactly the rows it is given, so pass one page.
-  const pagedPrefixes = useMemo(
-    () => filteredAndSortedPrefixes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
-    [filteredAndSortedPrefixes, currentPage, itemsPerPage],
-  );
-
-  // Event handlers
-  const handleFilterChange = useCallback((newFilters: FilterOptions) => {
-    // Ensure region filter stays locked
-    debouncedSetFilters({
-      ...newFilters,
-      regions: [region],
-    });
-  }, [region, debouncedSetFilters]);
-
-  const handleClearFilters = useCallback(() => {
-    setFilters({
-      regions: [region],
-      services: [],
-      searchTerm: '',
-      includeIPv4: true,
-      includeIPv6: true,
-    });
-  }, [region]);
-
-  const handleSort = useCallback((field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  }, [sortField]);
-
-  const handleCopyPrefix = useCallback(async (prefix: string) => {
-    const success = await copyToClipboard(prefix);
-    if (success) {
-      setCopiedPrefix(prefix);
-      setTimeout(() => setCopiedPrefix(undefined), 2000);
-    }
-  }, []);
+  const versions = useMemo(() => countVersions(prefixes), [prefixes]);
+  const footprint = useMemo(() => buildFootprint(prefixes), [prefixes]);
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
-          <h1 className="text-lg font-semibold text-destructive mb-2">
-            Error Loading AWS IP Ranges
-          </h1>
-          <p className="text-sm text-destructive/80">
-            Failed to load IP ranges for region {region}.
-          </p>
-        </div>
-      </div>
+      <PageError message={`Failed to load IP ranges for region ${region}.`} />
     );
   }
 
-  const ipv4Count = filteredAndSortedPrefixes.filter(p => p.type === 'ipv4').length;
-  const ipv6Count = filteredAndSortedPrefixes.filter(p => p.type === 'ipv6').length;
-
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header Section */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-2">
-          <Link
-            href="/"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            IPMapAWS
-          </Link>
-          <span className="text-muted-foreground">/</span>
-          <span className="text-muted-foreground">regions</span>
-          <span className="text-muted-foreground">/</span>
-          <span className="font-medium">{region}</span>
-        </div>
-        
-        <h1 className="text-4xl font-bold tracking-tight">
-          {region} AWS IP Ranges
-        </h1>
-        
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          AWS IP address ranges for the {region} region. 
-          Browse {count.toLocaleString()} IP prefixes across {availableServices.length} services.
-        </p>
-        
-        <div className="flex items-center justify-center space-x-8 text-sm text-muted-foreground">
-          <div>
-            <span className="font-medium text-foreground">{count.toLocaleString()}</span> total prefixes
-          </div>
-          <div>
-            <span className="font-medium text-foreground">{availableServices.length}</span> services
-          </div>
-          <div>
-            <span className="font-medium text-blue-600">{ipv4Count.toLocaleString()}</span> IPv4
-          </div>
-          <div>
-            <span className="font-medium text-green-600">{ipv6Count.toLocaleString()}</span> IPv6
-          </div>
-        </div>
-      </div>
-
-      {/* Data Status */}
-      <DataStatus lastUpdated={lastUpdated} />
-
-      {/* Filter Controls - Services only since region is locked */}
-      <FilterControls
-        regions={[region]} // Only show current region
-        services={availableServices}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onClearFilters={handleClearFilters}
+    <div className="page pt-6 sm:pt-8">
+      <Breadcrumbs
+        trail={[
+          { label: 'IPMapAWS', href: '/' },
+          { label: 'Regions', href: '/#regions' },
+          { label: region },
+        ]}
       />
 
-      {/* Export Summary */}
-      <ExportSummary
-        data={filteredAndSortedPrefixes}
-        totalCount={count}
-        filters={filters}
-        sortField={sortField}
-        sortDirection={sortDirection}
-      />
-
-      {/* Results Table */}
-      <PrefixTable
-        prefixes={pagedPrefixes}
-        totalCount={filteredAndSortedPrefixes.length}
-        loading={isLoading}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSort={handleSort}
-        onCopyPrefix={handleCopyPrefix}
-        copiedPrefix={copiedPrefix}
-        currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-      />
-
-      {/* Navigation Links */}
-      <div className="bg-muted/50 rounded-lg p-6">
-        <h3 className="font-medium text-foreground mb-4">Explore Services in {region}</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-          {availableServices.map((service) => (
-            <a
-              key={service}
-              href={`/regions/${region}/services/${service}`}
-              className="px-3 py-2 text-sm bg-card border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+      <div className="mt-5 grid gap-x-12 gap-y-6 lg:grid-cols-12">
+        <div className="min-w-0 lg:col-span-5">
+          <h1 className="text-[26px] font-bold leading-[1.2] tracking-[-0.015em] text-ink sm:text-[28px]">
+            <span className="font-mono">{region}</span> AWS IP ranges
+          </h1>
+          <p className="mt-3 max-w-[62ch] text-ink-2">
+            AWS publishes{' '}
+            <span className="font-mono font-semibold text-ink">
+              {count.toLocaleString('en-US')}
+            </span>{' '}
+            prefixes for the{' '}
+            <span className="font-mono text-ink">{region}</span> region:{' '}
+            <span className="font-mono text-ink">
+              {versions.ipv4.toLocaleString('en-US')}
+            </span>{' '}
+            IPv4 and{' '}
+            <span className="font-mono text-ink">
+              {versions.ipv6.toLocaleString('en-US')}
+            </span>{' '}
+            IPv6, across {services.length}{' '}
+            {services.length === 1 ? 'service' : 'services'}. Filter them below,
+            copy a prefix, or export the list as CSV for a firewall or security
+            group.
+          </p>
+          <p className="mt-3 text-[13px] text-ink-2">
+            Checking a single address?{' '}
+            <Link
+              href="/"
+              className="font-medium text-ink underline decoration-sage underline-offset-4"
             >
-              {service}
-            </a>
-          ))}
+              Look it up on the home page
+            </Link>
+            .
+          </p>
         </div>
+        <div className="min-w-0 lg:col-span-7">
+          {footprint ? (
+            <ParcelStrip
+              model={footprint}
+              title={
+                <>
+                  Where <span className="font-mono">{region}</span> sits in IPv4
+                  space
+                </>
+              }
+              note={`${versions.ipv4.toLocaleString('en-US')} IPv4 prefixes, drawn to scale`}
+            />
+          ) : (
+            <p className="rounded-lg border border-rule bg-paper px-4 py-3 text-[13px] text-ink-2">
+              {isLoading
+                ? 'Reading the AWS ranges…'
+                : `${region} has no IPv4 prefixes to draw.`}
+            </p>
+          )}
+        </div>
+        <DataStatus className="lg:col-span-12" lastUpdated={lastUpdated} />
       </div>
+
+      <LocalRegister
+        prefixes={prefixes}
+        region={region}
+        loading={isLoading}
+        heading="Prefix register"
+      />
+
+      {services.length > 0 && (
+        <section
+          aria-labelledby="services-heading"
+          className="mt-14 border-t border-ink pt-6"
+        >
+          <h2
+            id="services-heading"
+            className="text-lg font-bold tracking-[-0.01em] text-ink"
+          >
+            Services in <span className="font-mono">{region}</span>
+          </h2>
+          <ul className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] border-l border-t border-rule">
+            {services.map(({ service, n }) => (
+              <li key={service} className="border-b border-r border-rule">
+                <Link
+                  href={`/regions/${encodeURIComponent(region)}/services/${encodeURIComponent(service)}`}
+                  className="group flex min-h-12 h-full items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-sage-tint"
+                >
+                  <span className="min-w-0 [overflow-wrap:anywhere] text-[14px] font-semibold text-ink underline decoration-transparent underline-offset-4 group-hover:decoration-sage">
+                    {service}
+                  </span>
+                  <span
+                    className="font-mono text-[12px] text-ink-2"
+                    aria-label={`${n} prefixes`}
+                  >
+                    {n.toLocaleString('en-US')}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
-} 
+}

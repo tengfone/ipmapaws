@@ -2,6 +2,8 @@
 
 A comprehensive Next.js web application and REST API for exploring AWS IP address ranges. Built for network engineers, infrastructure teams, and developers who need programmatic access to AWS IP data.
 
+![IPMapAWS: looking up an IP draws its AWS prefix as a lot inside its block, then the filterable prefix register](assets/demo.gif)
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftengfone%2Fipmapaws)
 
 ## ✨ Features

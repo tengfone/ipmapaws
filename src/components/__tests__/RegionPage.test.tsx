@@ -28,24 +28,30 @@ describe('RegionPage with server data', () => {
     render(
       <RegionPage
         region="us-east-1"
-        initialData={{ prefixes: makePrefixes(120), lastUpdated: '2026-11-14-00-00-00' }}
-      />,
+        initialData={{
+          prefixes: makePrefixes(120),
+          lastUpdated: '2026-11-14-00-00-00',
+        }}
+      />
     );
 
     const rows = screen.getAllByRole('row');
     // 50 data rows plus the header row.
     expect(rows).toHaveLength(51);
     expect(screen.queryByText(/Loading AWS IP ranges data/)).toBeNull();
-    expect(screen.getByRole('link', { name: 'S3' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^S3\b/ })).toHaveAttribute(
       'href',
-      '/regions/us-east-1/services/S3',
+      '/regions/us-east-1/services/S3'
     );
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('shows a different page of rows when paging', async () => {
     render(
-      <RegionPage region="us-east-1" initialData={{ prefixes: makePrefixes(120) }} />,
+      <RegionPage
+        region="us-east-1"
+        initialData={{ prefixes: makePrefixes(120) }}
+      />
     );
     const firstPage = screen.getAllByRole('row')[1].textContent;
 

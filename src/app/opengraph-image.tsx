@@ -15,8 +15,8 @@ export default function OpengraphImage() {
           flexDirection: 'column',
           justifyContent: 'center',
           padding: 80,
-          background: '#0f172a',
-          color: '#ffffff',
+          background: '#1d2b36',
+          color: '#eef0ec',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
@@ -25,8 +25,8 @@ export default function OpengraphImage() {
               width: 96,
               height: 96,
               borderRadius: 20,
-              background: '#ffffff',
-              color: '#0f172a',
+              background: '#eef0ec',
+              color: '#1d2b36',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -38,10 +38,10 @@ export default function OpengraphImage() {
           </div>
           <div style={{ fontSize: 72, fontWeight: 700 }}>IPMapAWS</div>
         </div>
-        <div style={{ marginTop: 40, fontSize: 44, color: '#cbd5e1' }}>
+        <div style={{ marginTop: 40, fontSize: 44, color: '#d9dfd8' }}>
           Search and filter AWS IP prefixes by region and service
         </div>
-        <div style={{ marginTop: 24, fontSize: 32, color: '#94a3b8' }}>
+        <div style={{ marginTop: 24, fontSize: 32, color: '#9ba79f' }}>
           IPv4 and IPv6 · REST API · CSV export · IP lookup
         </div>
       </div>

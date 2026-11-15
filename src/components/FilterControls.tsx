@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Search, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SearchableMultiSelect } from '@/components/ui/searchable-multi-select';
 import { FilterOptions } from '@/types';
@@ -14,9 +13,15 @@ interface FilterControlsProps {
   onFilterChange: (filters: FilterOptions) => void;
   onSearchChange?: (value: string) => void;
   onClearFilters: () => void;
+  /** Hide the region picker (on a region's own page). */
+  showRegions?: boolean;
+  /** Hide the service picker (on a region/service page). */
+  showServices?: boolean;
+  searchPlaceholder?: string;
   className?: string;
 }
 
+/** The filter row over the register: search, regions, services, IP version. */
 export function FilterControls({
   regions,
   services,
@@ -25,153 +30,137 @@ export function FilterControls({
   onFilterChange,
   onSearchChange,
   onClearFilters,
+  showRegions = true,
+  showServices = true,
+  searchPlaceholder = 'Search prefix, region, service',
   className,
 }: FilterControlsProps) {
-  const handleRegionChange = (selectedRegions: string[]) => {
-    onFilterChange({
-      ...filters,
-      regions: selectedRegions,
-    });
-  };
-
-  const handleServiceChange = (selectedServices: string[]) => {
-    onFilterChange({
-      ...filters,
-      services: selectedServices,
-    });
-  };
+  const id = useId();
+  const currentSearchTerm =
+    searchInput !== undefined ? searchInput : filters.searchTerm;
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     if (onSearchChange) {
-      // Use the debounced search handler if provided
       onSearchChange(value);
     } else {
-      // Fallback to direct filter change for backward compatibility
-      onFilterChange({
-        ...filters,
-        searchTerm: value,
-      });
+      onFilterChange({ ...filters, searchTerm: value });
     }
   };
 
-  const handleIPv4Toggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({
-      ...filters,
-      includeIPv4: event.target.checked,
-    });
-  };
-
-  const handleIPv6Toggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({
-      ...filters,
-      includeIPv6: event.target.checked,
-    });
-  };
-
-  const currentSearchTerm = searchInput !== undefined ? searchInput : filters.searchTerm;
-  const hasActiveFilters = 
-    filters.regions.length > 0 ||
-    filters.services.length > 0 ||
+  const hasActiveFilters =
+    (showRegions && filters.regions.length > 0) ||
+    (showServices && filters.services.length > 0) ||
     currentSearchTerm.trim() !== '' ||
     !filters.includeIPv4 ||
     !filters.includeIPv6;
 
   return (
-    <div className={cn('space-y-4 p-6 bg-card rounded-lg border', className)}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Filter AWS IP Ranges</h2>
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onClearFilters}
-            className="text-muted-foreground"
-          >
-            <X className="h-4 w-4 mr-2" />
-            Clear Filters
-          </Button>
+    <div
+      role="search"
+      aria-label="Filter prefixes"
+      className={cn(
+        'flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-start',
+        className
+      )}
+    >
+      <div className="relative min-w-0 lg:w-[22rem]">
+        <label htmlFor={`${id}-search`} className="sr-only">
+          Search prefixes
+        </label>
+        <Search
+          className="pointer-events-none absolute left-3 top-3 size-4 text-ink-2"
+          strokeWidth={1.75}
+          aria-hidden="true"
+        />
+        <Input
+          id={`${id}-search`}
+          type="search"
+          placeholder={searchPlaceholder}
+          value={currentSearchTerm}
+          onChange={handleSearchChange}
+          autoComplete="off"
+          spellCheck={false}
+          className="pl-9"
+        />
+      </div>
+
+      <div
+        className={cn(
+          'grid min-w-0 gap-3 lg:contents',
+          showRegions && showServices ? 'sm:grid-cols-2' : 'sm:grid-cols-1'
+        )}
+      >
+        {showRegions && (
+          <SearchableMultiSelect
+            className="lg:w-52"
+            label="Regions"
+            options={regions}
+            selected={filters.regions}
+            onChange={(selected) =>
+              onFilterChange({ ...filters, regions: selected })
+            }
+            placeholder={
+              regions.length ? `All regions (${regions.length})` : 'All regions'
+            }
+            searchPlaceholder="Find a region"
+            chipStyle="region"
+          />
+        )}
+        {showServices && (
+          <SearchableMultiSelect
+            className="lg:w-52"
+            label="Services"
+            options={services}
+            selected={filters.services}
+            onChange={(selected) =>
+              onFilterChange({ ...filters, services: selected })
+            }
+            placeholder={
+              services.length
+                ? `All services (${services.length})`
+                : 'All services'
+            }
+            searchPlaceholder="Find a service"
+          />
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Search Input */}
-        <div className="space-y-2">
-          <label htmlFor="search" className="block text-sm leading-6 font-medium">
-            Search
-          </label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="search"
-              type="text"
-              placeholder="Search prefixes, regions, services..."
-              value={searchInput !== undefined ? searchInput : filters.searchTerm}
-              onChange={handleSearchChange}
-              className="pl-10"
-            />
-          </div>
-        </div>
-
-        {/* Region Filter */}
-        <div className="space-y-2">
-          <label className="block text-sm leading-6 font-medium">
-            Regions
-          </label>
-          <SearchableMultiSelect
-            options={regions}
-            selected={filters.regions}
-            onChange={handleRegionChange}
-            placeholder="Select regions..."
-            searchPlaceholder="Search regions..."
+      <fieldset className="flex h-10 items-center gap-4">
+        <legend className="sr-only">IP version</legend>
+        <label className="flex items-center gap-2 text-sm font-medium text-ink">
+          <input
+            type="checkbox"
+            checked={filters.includeIPv4}
+            onChange={(e) =>
+              onFilterChange({ ...filters, includeIPv4: e.target.checked })
+            }
+            className="size-4"
           />
-        </div>
-
-        {/* Service Filter */}
-        <div className="space-y-2">
-          <label className="block text-sm leading-6 font-medium">
-            Services
-          </label>
-          <SearchableMultiSelect
-            options={services}
-            selected={filters.services}
-            onChange={handleServiceChange}
-            placeholder="Select services..."
-            searchPlaceholder="Search services..."
+          IPv4
+        </label>
+        <label className="flex items-center gap-2 text-sm font-medium text-ink">
+          <input
+            type="checkbox"
+            checked={filters.includeIPv6}
+            onChange={(e) =>
+              onFilterChange({ ...filters, includeIPv6: e.target.checked })
+            }
+            className="size-4"
           />
-        </div>
-
-        {/* IP Type Filters */}
-        <div className="space-y-2">
-          <label className="block text-sm leading-6 font-medium">IP Type</label>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <input
-                id="ipv4"
-                type="checkbox"
-                checked={filters.includeIPv4}
-                onChange={handleIPv4Toggle}
-                className="h-4 w-4 rounded-sm border-gray-300 text-primary focus:ring-primary"
-              />
-              <label htmlFor="ipv4" className="text-sm">
-                IPv4
-              </label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                id="ipv6"
-                type="checkbox"
-                checked={filters.includeIPv6}
-                onChange={handleIPv6Toggle}
-                className="h-4 w-4 rounded-sm border-gray-300 text-primary focus:ring-primary"
-              />
-              <label htmlFor="ipv6" className="text-sm">
-                IPv6
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
+          IPv6
+        </label>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={onClearFilters}
+            className="inline-flex items-center gap-1 rounded-sm text-[13px] font-medium text-ink-2 hover:text-ink"
+          >
+            <X className="size-3.5" strokeWidth={2} aria-hidden="true" />
+            Clear filters
+          </button>
+        )}
+      </fieldset>
     </div>
   );
-} 
+}

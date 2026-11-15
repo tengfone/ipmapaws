@@ -1,129 +1,236 @@
 @import 'tailwindcss';
 
-/* Class-based dark mode (the inline script in layout.tsx toggles .dark on <html>). */
+/* Class-based dark mode (the inline script in layout.tsx sets .dark on <html>). */
 @custom-variant dark (&:is(.dark *));
 
-/* Theme tokens, previously in tailwind.config.js. Values live in the CSS
-   variables below so the .dark class can swap them. */
+/*
+ * Cadastral Plat. AWS address space drawn as surveyed land: drafting-film
+ * ground, survey ink linework, survey orange for the queried point and the
+ * matched lot only, sage for lots and region labels. Neutrals are a fixed
+ * tonal ramp; rules are 1px; nothing casts a shadow except open popovers.
+ */
 @theme inline {
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-}
+  --color-ground: var(--ground);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-on-ink: var(--on-ink);
+  --color-rule: var(--rule);
+  --color-rule-2: var(--rule-2);
+  --color-mark: var(--mark);
+  --color-mark-ink: var(--mark-ink);
+  --color-sage: var(--sage);
+  --color-sage-ink: var(--sage-ink);
+  --color-sage-tint: var(--sage-tint);
+  --color-danger: var(--danger);
 
-/* Matches the Tailwind 3 config: centered, 2rem padding, capped at 1400px.
-   Breakpoint max-widths from Tailwind's default container are reset. */
-@utility container {
-  margin-inline: auto;
-  padding-inline: 2rem;
-  max-width: 100%;
-  @media (width >= 1400px) {
-    max-width: 1400px;
-  }
+  /* Legacy names, so anything still using them follows the plat palette. */
+  --color-background: var(--ground);
+  --color-foreground: var(--ink);
+  --color-card: var(--paper);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--paper);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--ink);
+  --color-primary-foreground: var(--on-ink);
+  --color-muted: var(--rule-2);
+  --color-muted-foreground: var(--ink-2);
+  --color-accent: var(--sage-tint);
+  --color-accent-foreground: var(--ink);
+  --color-border: var(--rule);
+  --color-input: var(--rule);
+  --color-ring: var(--ink);
+  --color-destructive: var(--danger);
+
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    color-scheme: light;
+    --ground: #eef0ec;
+    --paper: #f8f9f6;
+    --ink: #1d2b36;
+    --ink-2: #4f5d67;
+    --on-ink: #eef0ec;
+    --rule: #c3cac2;
+    --rule-2: #dde1da;
+    --mark: #c2410c;
+    --mark-ink: #b13a0a;
+    --sage: #7c8a6e;
+    --sage-ink: #4e5b43;
+    --sage-tint: #dfe5d6;
+    --danger: #a3222d;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    color-scheme: dark;
+    --ground: #11181d;
+    --paper: #162026;
+    --ink: #d9dfd8;
+    --ink-2: #9ba79f;
+    --on-ink: #11181d;
+    --rule: #34434c;
+    --rule-2: #212c33;
+    --mark: #c2410c;
+    --mark-ink: #f07a45;
+    --sage: #7c8a6e;
+    --sage-ink: #a9b998;
+    --sage-tint: #222d22;
+    --danger: #f08a90;
   }
-}
 
-@layer base {
-  * {
-    @apply border-border;
+  *,
+  ::before,
+  ::after {
+    border-color: var(--rule);
   }
+
+  html {
+    background: var(--ground);
+    scrollbar-color: var(--rule) var(--ground);
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
-} 
 
-/* Tailwind 4 changed some preflight defaults; keep the Tailwind 3 look. */
-@layer base {
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  code,
+  kbd,
+  pre,
+  .font-mono {
+    font-variant-numeric: tabular-nums slashed-zero;
+    font-feature-settings: 'zero' 1;
+  }
+
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--sage) 38%, transparent);
+    color: var(--ink);
+  }
+
+  input,
+  textarea {
+    caret-color: var(--ink);
+  }
+
   input::placeholder,
   textarea::placeholder {
-    color: var(--color-gray-400);
+    color: var(--ink-2);
+    opacity: 1;
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 
   button:not(:disabled),
-  [role='button']:not(:disabled) {
+  [role='button']:not(:disabled),
+  summary {
     cursor: pointer;
+  }
+
+  input[type='checkbox'] {
+    accent-color: var(--sage-ink);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--ground);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--rule);
+    border: 2px solid var(--ground);
+    border-radius: 6px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-2);
+  }
+}
+
+/* Centered page column: 16px gutters on phones, 48px on desktop. */
+@utility page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1440px;
+  padding-inline: 1rem;
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 3rem;
+  }
+}
+
+/* Small caps for block and lot labels. */
+@utility plat-label {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* The one authored moment: the queried point settles onto the plat. */
+@keyframes plat-point {
+  from {
+    transform: translateY(-6px);
+    opacity: 0.35;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.plat-point {
+  animation: plat-point 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-box: fill-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

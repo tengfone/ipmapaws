@@ -1,13 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, X, Search } from 'lucide-react';
+import React, { useEffect, useId, useRef, useState } from 'react';
+import { Check, ChevronDown, Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SearchableMultiSelectProps {
   options: string[];
   selected: string[];
   onChange: (selected: string[]) => void;
+  /** Accessible name, e.g. "Regions". */
+  label: string;
+  /** Trigger text when nothing is selected, e.g. "All regions (43)". */
   placeholder?: string;
   searchPlaceholder?: string;
+  /** Show chips in the sage region-label style. */
+  chipStyle?: 'region' | 'plain';
   className?: string;
   disabled?: boolean;
 }
@@ -16,172 +21,199 @@ export function SearchableMultiSelect({
   options,
   selected,
   onChange,
+  label,
   placeholder = 'Select items...',
   searchPlaceholder = 'Search...',
+  chipStyle = 'plain',
   className,
   disabled = false,
 }: SearchableMultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const listId = useId();
 
-  // Filter options based on search term
-  const filteredOptions = options.filter(option =>
+  const filteredOptions = options.filter((option) =>
     option.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle click outside to close dropdown
+  const close = (returnFocus: boolean) => {
+    setIsOpen(false);
+    setSearchTerm('');
+    if (returnFocus) triggerRef.current?.focus();
+  };
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    if (!isOpen) return;
+    const handlePointer = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setSearchTerm('');
       }
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Focus search input when dropdown opens
-  useEffect(() => {
-    if (isOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
+    document.addEventListener('mousedown', handlePointer);
+    searchInputRef.current?.focus();
+    return () => document.removeEventListener('mousedown', handlePointer);
   }, [isOpen]);
 
-  const handleToggleOption = (option: string) => {
-    if (selected.includes(option)) {
-      onChange(selected.filter(item => item !== option));
-    } else {
-      onChange([...selected, option]);
-    }
+  const toggleOption = (option: string) => {
+    onChange(
+      selected.includes(option)
+        ? selected.filter((item) => item !== option)
+        : [...selected, option]
+    );
   };
 
-  const handleRemoveSelected = (option: string) => {
-    onChange(selected.filter(item => item !== option));
-  };
-
-  const handleClearAll = () => {
-    onChange([]);
-  };
-
-  const displayText = selected.length === 0 
-    ? placeholder 
-    : `${selected.length} selected`;
+  const triggerText =
+    selected.length === 0
+      ? placeholder
+      : selected.length === 1
+        ? selected[0]
+        : `${selected.length} selected`;
 
   return (
-    <div className={cn('relative', className)} ref={dropdownRef}>
-      {/* Main trigger button */}
+    <div
+      className={cn('relative min-w-0', className)}
+      ref={rootRef}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && isOpen) {
+          event.stopPropagation();
+          close(true);
+        }
+      }}
+    >
       <button
+        ref={triggerRef}
         type="button"
+        aria-label={`${label}: ${selected.length === 0 ? placeholder : triggerText}`}
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? listId : undefined}
         className={cn(
-          'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+          'flex h-10 w-full items-center justify-between gap-2 rounded-md border border-rule bg-paper px-3 text-left text-sm text-ink transition-colors hover:border-ink-2',
+          isOpen && 'border-ink',
           disabled && 'cursor-not-allowed opacity-50'
         )}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={() => !disabled && (isOpen ? close(false) : setIsOpen(true))}
         disabled={disabled}
       >
-        <span className={cn(
-          'truncate',
-          selected.length === 0 && 'text-muted-foreground'
-        )}>
-          {displayText}
-        </span>
-        <ChevronDown 
+        <span
           className={cn(
-            'h-4 w-4 shrink-0 transition-transform',
+            'truncate',
+            selected.length === 1 && 'font-mono text-[13px]'
+          )}
+        >
+          {triggerText}
+        </span>
+        <ChevronDown
+          className={cn(
+            'size-4 shrink-0 text-ink-2 transition-transform',
             isOpen && 'rotate-180'
-          )} 
+          )}
+          strokeWidth={1.75}
         />
       </button>
 
-      {/* Selected items display */}
       {selected.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {selected.map((item) => (
             <span
               key={item}
-              className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+              className={cn(
+                'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-sm border py-0.5 pl-2 pr-1 font-mono text-[12px] text-ink',
+                chipStyle === 'region'
+                  ? 'border-sage bg-sage-tint'
+                  : 'border-rule bg-paper'
+              )}
             >
               {item}
               <button
                 type="button"
-                onClick={() => handleRemoveSelected(item)}
-                className="hover:text-primary/80"
+                onClick={() => toggleOption(item)}
+                aria-label={`Remove ${item}`}
+                className="rounded-sm p-0.5 text-ink-2 hover:text-ink"
               >
-                <X className="h-3 w-3" />
+                <X className="size-3" strokeWidth={2} />
               </button>
             </span>
           ))}
           {selected.length > 1 && (
             <button
               type="button"
-              onClick={handleClearAll}
-              className="text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => onChange([])}
+              className="text-[12px] text-ink-2 underline decoration-sage underline-offset-4 hover:text-ink"
             >
-              Clear all
+              Clear
             </button>
           )}
         </div>
       )}
 
-      {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full z-50 w-full mt-1 rounded-md border bg-popover shadow-md">
-          {/* Search input */}
-          <div className="p-2 border-b">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder={searchPlaceholder}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-2 py-1 text-sm bg-transparent border-0 outline-hidden placeholder:text-muted-foreground"
-              />
-            </div>
+        <div
+          id={listId}
+          className="absolute left-0 top-11 z-40 w-full min-w-56 rounded-md border border-ink bg-paper shadow-[0_8px_24px_-12px_rgb(0_0_0/0.35)]"
+        >
+          <div className="relative border-b border-rule">
+            <Search
+              className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ink-2"
+              strokeWidth={1.75}
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              aria-label={`Search ${label.toLowerCase()}`}
+              placeholder={searchPlaceholder}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-10 w-full bg-transparent pl-8 pr-2 text-sm text-ink outline-none"
+            />
           </div>
 
-          {/* Options list */}
-          <div className="max-h-60 overflow-y-auto">
+          <div
+            className="max-h-64 overflow-y-auto p-1"
+            role="group"
+            aria-label={label}
+          >
             {filteredOptions.length > 0 ? (
-              <div className="p-1">
-                {filteredOptions.map((option) => {
-                  const isSelected = selected.includes(option);
-                  return (
-                    <button
-                      key={option}
-                      type="button"
+              filteredOptions.map((option) => {
+                const isSelected = selected.includes(option);
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={isSelected}
+                    className={cn(
+                      'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left font-mono text-[13px] text-ink hover:bg-sage-tint',
+                      isSelected && 'bg-sage-tint'
+                    )}
+                    onClick={() => toggleOption(option)}
+                  >
+                    <span
                       className={cn(
-                        'w-full flex items-center px-2 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground',
-                        isSelected && 'bg-accent text-accent-foreground'
+                        'flex size-4 shrink-0 items-center justify-center rounded-sm border',
+                        isSelected
+                          ? 'border-sage-ink bg-sage-ink text-on-ink'
+                          : 'border-ink-2'
                       )}
-                      onClick={() => handleToggleOption(option)}
                     >
-                      <div className={cn(
-                        'mr-2 h-4 w-4 border border-primary rounded-sm flex items-center justify-center',
-                        isSelected && 'bg-primary border-primary'
-                      )}>
-                        {isSelected && (
-                          <div className="h-2 w-2 bg-primary-foreground rounded-sm" />
-                        )}
-                      </div>
-                      <span className="truncate">{option}</span>
-                    </button>
-                  );
-                })}
-              </div>
+                      {isSelected && (
+                        <Check className="size-3" strokeWidth={3} />
+                      )}
+                    </span>
+                    <span className="truncate">{option}</span>
+                  </button>
+                );
+              })
             ) : (
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                {searchTerm ? 'No options found' : 'No options available'}
-              </div>
+              <p className="px-2 py-4 text-center text-sm text-ink-2">
+                {searchTerm ? `Nothing matches "${searchTerm}"` : 'No options'}
+              </p>
             )}
           </div>
         </div>
       )}
     </div>
   );
-} 
+}

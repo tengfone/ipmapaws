@@ -58,7 +58,7 @@ type Hextets = readonly [
   number,
 ];
 
-type ParsedAddress =
+export type ParsedAddress =
   | {
       version: 'ipv4';
       network: number;
@@ -232,6 +232,23 @@ export function lookupContainingPrefixes(
  */
 export function normalizeQuery(rawQuery: string): string {
   return parseQuery(rawQuery).normalized;
+}
+
+/**
+ * Parses an IP or CIDR into the numeric form lookups use (an IPv4-mapped
+ * IPv6 query comes back as IPv4). For an address without a prefix length the
+ * length is the full width, so `network` is the address itself.
+ * Throws InvalidLookupQueryError.
+ */
+export function parseAddress(rawQuery: string): ParsedAddress {
+  return parseQuery(rawQuery).address;
+}
+
+/** Text form of a parsed network address (RFC 5952 for IPv6), without a length. */
+export function formatNetwork(address: ParsedAddress): string {
+  return address.version === 'ipv4'
+    ? formatIPv4(address.network)
+    : formatIPv6(address.network);
 }
 
 /**

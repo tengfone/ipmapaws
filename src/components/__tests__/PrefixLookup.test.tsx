@@ -43,21 +43,75 @@ describe('PrefixLookup', () => {
     setData(ipRangesFixture);
   });
 
-  it('highlights the most specific prefix as the best match', async () => {
+  it('shows the most specific prefix as one lot with all its service records', async () => {
     render(<PrefixLookup />);
     await lookUp('3.5.16.1');
 
-    const best = screen.getByTestId('best-match');
-    expect(within(best).getByText('3.5.16.0/21')).toBeInTheDocument();
-    expect(within(best).getByText('Best match')).toBeInTheDocument();
-    expect(within(best).getByText(/S3 · eu-west-1/)).toBeInTheDocument();
-    expect(screen.getAllByText('Best match')).toHaveLength(1);
-    expect(screen.getByText(/4 prefixes contain/)).toBeInTheDocument();
+    const lot = screen.getByTestId('matched-lot');
+    expect(within(lot).getByText('3.5.16.0/21')).toBeInTheDocument();
+    expect(within(lot).getByText('Matched lot')).toBeInTheDocument();
+    // S3 and AMAZON both list 3.5.16.0/21: one lot, both services.
+    expect(within(lot).getByText('S3 · AMAZON')).toBeInTheDocument();
+    // Region label and network border group.
+    expect(within(lot).getAllByText('eu-west-1')).toHaveLength(2);
+    expect(screen.getAllByTestId('matched-lot')).toHaveLength(1);
+    expect(
+      screen.getByText('3 prefixes (4 service records) contain')
+    ).toBeInTheDocument();
 
     const list = screen.getByRole('list', { name: 'Containing prefixes' });
     const rows = within(list).getAllByRole('listitem');
-    expect(rows[0]).toBe(best);
-    expect(within(rows[3]).getByText('3.0.0.0/9')).toBeInTheDocument();
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toBe(lot);
+    expect(within(rows[1]).getByText('3.5.0.0/16')).toBeInTheDocument();
+    expect(within(rows[2]).getByText('3.0.0.0/9')).toBeInTheDocument();
+    // No second card repeats the matched prefix.
+    expect(within(list).getAllByText('3.5.16.0/21')).toHaveLength(1);
+  });
+
+  it('draws the plat from the matched lot down to the queried point', async () => {
+    render(<PrefixLookup />);
+    await lookUp('3.5.16.1');
+
+    const plat = screen.getByRole('img', { name: /contains 3\.5\.16\.1/ });
+    expect(plat).toHaveAccessibleName(
+      'block 3.0.0.0/8, which contains block 3.5.0.0/16, which contains lot 3.5.16.0/21, which contains 3.5.16.1.'
+    );
+    expect(screen.getByText('Plat of 3.5.16.1')).toBeInTheDocument();
+  });
+
+  it('shows a labelled example plat before the first lookup', () => {
+    render(<PrefixLookup />);
+
+    expect(screen.getByText(/Example plat of/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/This is an example drawn from today/)
+    ).toBeInTheDocument();
+  });
+
+  it('says why nothing is drawn for invalid input', async () => {
+    render(<PrefixLookup />);
+    await lookUp('not-an-ip');
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Not an IP address or CIDR'
+    );
+    expect(screen.getByText('Nothing to draw')).toBeInTheDocument();
+  });
+
+  it('stamps Copied on the copy button in place', async () => {
+    Object.defineProperty(window, 'isSecureContext', {
+      value: true,
+      configurable: true,
+    });
+    render(<PrefixLookup />);
+    await lookUp('3.5.16.1');
+
+    const user = userEvent.setup();
+    const best = screen.getByTestId('matched-lot');
+    await user.click(within(best).getByRole('button', { name: 'Copy prefix' }));
+
+    expect(await within(best).findByText('Copied')).toBeInTheDocument();
   });
 
   it('runs locally without calling the API', async () => {
@@ -74,15 +128,17 @@ describe('PrefixLookup', () => {
     expect(
       screen.getByText('No single published prefix contains this whole range')
     ).toBeInTheDocument();
-    expect(screen.getByText(/4 AWS prefixes fall/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/3 AWS prefixes \(4 service records\) fall/)
+    ).toBeInTheDocument();
     expect(
       screen.queryByText('Not in the published AWS ranges')
     ).not.toBeInTheDocument();
-    expect(screen.queryByTestId('best-match')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('matched-lot')).not.toBeInTheDocument();
     const inside = screen.getByRole('list', {
       name: 'Prefixes inside the range',
     });
-    expect(within(inside).getAllByRole('listitem')).toHaveLength(4);
+    expect(within(inside).getAllByRole('listitem')).toHaveLength(3);
   });
 
   it('says when nothing contains or overlaps the query', async () => {
@@ -103,7 +159,7 @@ describe('PrefixLookup', () => {
 
     expect(screen.getByText(/IPv4-mapped IPv6 address/)).toBeInTheDocument();
     expect(screen.getAllByText('::ffff:3.5.16.1').length).toBeGreaterThan(0);
-    expect(screen.getByTestId('best-match')).toHaveTextContent('3.5.16.0/21');
+    expect(screen.getByTestId('matched-lot')).toHaveTextContent('3.5.16.0/21');
   });
 
   it('shows the parser message for invalid input', async () => {
@@ -125,6 +181,6 @@ describe('PrefixLookup', () => {
     setData(ipRangesFixture);
     rerender(<PrefixLookup />);
 
-    expect(screen.getByTestId('best-match')).toHaveTextContent('3.5.16.0/21');
+    expect(screen.getByTestId('matched-lot')).toHaveTextContent('3.5.16.0/21');
   });
 });

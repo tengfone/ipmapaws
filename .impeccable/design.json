@@ -1,0 +1,612 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-15T05:20:39.929Z",
+  "title": "Design System: IPMapAWS",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Drafting Film",
+        "canonical": "oklch(95.2% 0.006 128.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 128.5)",
+          "oklch(26.4% 0.004 128.5)",
+          "oklch(37.9% 0.004 128.5)",
+          "oklch(49.3% 0.005 128.5)",
+          "oklch(60.7% 0.005 128.5)",
+          "oklch(72.1% 0.004 128.5)",
+          "oklch(83.6% 0.004 128.5)",
+          "oklch(95.0% 0.003 128.5)"
+        ],
+        "cssVar": "--ground"
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Sheet",
+        "canonical": "oklch(98.1% 0.004 121.6)",
+        "tonalRamp": [
+          "oklch(15.0% 0.002 121.6)",
+          "oklch(26.4% 0.003 121.6)",
+          "oklch(37.9% 0.003 121.6)",
+          "oklch(49.3% 0.004 121.6)",
+          "oklch(60.7% 0.004 121.6)",
+          "oklch(72.1% 0.003 121.6)",
+          "oklch(83.6% 0.003 121.6)",
+          "oklch(95.0% 0.002 121.6)"
+        ],
+        "cssVar": "--paper"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Survey Ink",
+        "canonical": "oklch(28.1% 0.028 242.6)",
+        "tonalRamp": [
+          "oklch(15.0% 0.014 242.6)",
+          "oklch(26.4% 0.018 242.6)",
+          "oklch(37.9% 0.022 242.6)",
+          "oklch(49.3% 0.026 242.6)",
+          "oklch(60.7% 0.026 242.6)",
+          "oklch(72.1% 0.022 242.6)",
+          "oklch(83.6% 0.018 242.6)",
+          "oklch(95.0% 0.014 242.6)"
+        ],
+        "cssVar": "--ink"
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Second Ink",
+        "canonical": "oklch(47.0% 0.024 239.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.012 239.1)",
+          "oklch(26.4% 0.015 239.1)",
+          "oklch(37.9% 0.019 239.1)",
+          "oklch(49.3% 0.022 239.1)",
+          "oklch(60.7% 0.022 239.1)",
+          "oklch(72.1% 0.019 239.1)",
+          "oklch(83.6% 0.015 239.1)",
+          "oklch(95.0% 0.012 239.1)"
+        ],
+        "cssVar": "--ink-2"
+      },
+      "on-ink": {
+        "role": "neutral",
+        "displayName": "On Ink",
+        "canonical": "oklch(95.2% 0.006 128.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 128.5)",
+          "oklch(26.4% 0.004 128.5)",
+          "oklch(37.9% 0.004 128.5)",
+          "oklch(49.3% 0.005 128.5)",
+          "oklch(60.7% 0.005 128.5)",
+          "oklch(72.1% 0.004 128.5)",
+          "oklch(83.6% 0.004 128.5)",
+          "oklch(95.0% 0.003 128.5)"
+        ],
+        "cssVar": "--on-ink"
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Ruling",
+        "canonical": "oklch(83.1% 0.013 141.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.007 141.8)",
+          "oklch(26.4% 0.009 141.8)",
+          "oklch(37.9% 0.010 141.8)",
+          "oklch(49.3% 0.012 141.8)",
+          "oklch(60.7% 0.012 141.8)",
+          "oklch(72.1% 0.010 141.8)",
+          "oklch(83.6% 0.009 141.8)",
+          "oklch(95.0% 0.007 141.8)"
+        ],
+        "cssVar": "--rule"
+      },
+      "rule-2": {
+        "role": "neutral",
+        "displayName": "Pale Ruling",
+        "canonical": "oklch(90.5% 0.010 131.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.005 131.4)",
+          "oklch(26.4% 0.007 131.4)",
+          "oklch(37.9% 0.008 131.4)",
+          "oklch(49.3% 0.010 131.4)",
+          "oklch(60.7% 0.010 131.4)",
+          "oklch(72.1% 0.008 131.4)",
+          "oklch(83.6% 0.007 131.4)",
+          "oklch(95.0% 0.005 131.4)"
+        ],
+        "cssVar": "--rule-2"
+      },
+      "mark": {
+        "role": "primary",
+        "displayName": "Survey Orange",
+        "canonical": "oklch(55.3% 0.174 38.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.085 38.4)",
+          "oklch(26.4% 0.111 38.4)",
+          "oklch(37.9% 0.136 38.4)",
+          "oklch(49.3% 0.161 38.4)",
+          "oklch(60.7% 0.161 38.4)",
+          "oklch(72.1% 0.136 38.4)",
+          "oklch(83.6% 0.111 38.4)",
+          "oklch(95.0% 0.085 38.4)"
+        ],
+        "cssVar": "--mark"
+      },
+      "mark-ink": {
+        "role": "primary",
+        "displayName": "Survey Orange, text weight",
+        "canonical": "oklch(51.6% 0.163 38.2)",
+        "tonalRamp": [
+          "oklch(15.0% 0.080 38.2)",
+          "oklch(26.4% 0.104 38.2)",
+          "oklch(37.9% 0.127 38.2)",
+          "oklch(49.3% 0.151 38.2)",
+          "oklch(60.7% 0.151 38.2)",
+          "oklch(72.1% 0.127 38.2)",
+          "oklch(83.6% 0.104 38.2)",
+          "oklch(95.0% 0.080 38.2)"
+        ],
+        "cssVar": "--mark-ink"
+      },
+      "sage": {
+        "role": "secondary",
+        "displayName": "Lot Sage",
+        "canonical": "oklch(61.4% 0.044 129.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.022 129.3)",
+          "oklch(26.4% 0.028 129.3)",
+          "oklch(37.9% 0.035 129.3)",
+          "oklch(49.3% 0.041 129.3)",
+          "oklch(60.7% 0.041 129.3)",
+          "oklch(72.1% 0.035 129.3)",
+          "oklch(83.6% 0.028 129.3)",
+          "oklch(95.0% 0.022 129.3)"
+        ],
+        "cssVar": "--sage"
+      },
+      "sage-ink": {
+        "role": "secondary",
+        "displayName": "Sage Ink",
+        "canonical": "oklch(45.3% 0.041 131.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.020 131.0)",
+          "oklch(26.4% 0.026 131.0)",
+          "oklch(37.9% 0.032 131.0)",
+          "oklch(49.3% 0.038 131.0)",
+          "oklch(60.7% 0.038 131.0)",
+          "oklch(72.1% 0.032 131.0)",
+          "oklch(83.6% 0.026 131.0)",
+          "oklch(95.0% 0.020 131.0)"
+        ],
+        "cssVar": "--sage-ink"
+      },
+      "sage-tint": {
+        "role": "secondary",
+        "displayName": "Sage Tint",
+        "canonical": "oklch(91.3% 0.021 124.7)",
+        "tonalRamp": [
+          "oklch(15.0% 0.010 124.7)",
+          "oklch(26.4% 0.013 124.7)",
+          "oklch(37.9% 0.016 124.7)",
+          "oklch(49.3% 0.020 124.7)",
+          "oklch(60.7% 0.020 124.7)",
+          "oklch(72.1% 0.016 124.7)",
+          "oklch(83.6% 0.013 124.7)",
+          "oklch(95.0% 0.010 124.7)"
+        ],
+        "cssVar": "--sage-tint"
+      },
+      "danger": {
+        "role": "error",
+        "displayName": "Danger",
+        "canonical": "oklch(47.0% 0.164 22.2)",
+        "tonalRamp": [
+          "oklch(15.0% 0.081 22.2)",
+          "oklch(26.4% 0.104 22.2)",
+          "oklch(37.9% 0.128 22.2)",
+          "oklch(49.3% 0.152 22.2)",
+          "oklch(60.7% 0.152 22.2)",
+          "oklch(72.1% 0.128 22.2)",
+          "oklch(83.6% 0.104 22.2)",
+          "oklch(95.0% 0.081 22.2)"
+        ],
+        "cssVar": "--danger"
+      },
+      "ground-dark": {
+        "role": "neutral",
+        "displayName": "Drafting Film (night)",
+        "canonical": "oklch(20.4% 0.015 239.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.007 239.5)",
+          "oklch(26.4% 0.009 239.5)",
+          "oklch(37.9% 0.011 239.5)",
+          "oklch(49.3% 0.013 239.5)",
+          "oklch(60.7% 0.013 239.5)",
+          "oklch(72.1% 0.011 239.5)",
+          "oklch(83.6% 0.009 239.5)",
+          "oklch(95.0% 0.007 239.5)"
+        ],
+        "cssVar": "--ground (.dark)"
+      },
+      "paper-dark": {
+        "role": "neutral",
+        "displayName": "Sheet (night)",
+        "canonical": "oklch(23.7% 0.018 234.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.009 234.9)",
+          "oklch(26.4% 0.012 234.9)",
+          "oklch(37.9% 0.014 234.9)",
+          "oklch(49.3% 0.017 234.9)",
+          "oklch(60.7% 0.017 234.9)",
+          "oklch(72.1% 0.014 234.9)",
+          "oklch(83.6% 0.012 234.9)",
+          "oklch(95.0% 0.009 234.9)"
+        ],
+        "cssVar": "--paper (.dark)"
+      },
+      "ink-dark": {
+        "role": "neutral",
+        "displayName": "Chalk Ink (night)",
+        "canonical": "oklch(89.7% 0.011 141.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.006 141.3)",
+          "oklch(26.4% 0.007 141.3)",
+          "oklch(37.9% 0.009 141.3)",
+          "oklch(49.3% 0.011 141.3)",
+          "oklch(60.7% 0.011 141.3)",
+          "oklch(72.1% 0.009 141.3)",
+          "oklch(83.6% 0.007 141.3)",
+          "oklch(95.0% 0.006 141.3)"
+        ],
+        "cssVar": "--ink (.dark)"
+      },
+      "ink-2-dark": {
+        "role": "neutral",
+        "displayName": "Second Ink (night)",
+        "canonical": "oklch(71.6% 0.018 156.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.009 156.8)",
+          "oklch(26.4% 0.011 156.8)",
+          "oklch(37.9% 0.014 156.8)",
+          "oklch(49.3% 0.016 156.8)",
+          "oklch(60.7% 0.016 156.8)",
+          "oklch(72.1% 0.014 156.8)",
+          "oklch(83.6% 0.011 156.8)",
+          "oklch(95.0% 0.009 156.8)"
+        ],
+        "cssVar": "--ink-2 (.dark)"
+      },
+      "rule-dark": {
+        "role": "neutral",
+        "displayName": "Ruling (night)",
+        "canonical": "oklch(37.3% 0.025 234.7)",
+        "tonalRamp": [
+          "oklch(15.0% 0.012 234.7)",
+          "oklch(26.4% 0.016 234.7)",
+          "oklch(37.9% 0.019 234.7)",
+          "oklch(49.3% 0.023 234.7)",
+          "oklch(60.7% 0.023 234.7)",
+          "oklch(72.1% 0.019 234.7)",
+          "oklch(83.6% 0.016 234.7)",
+          "oklch(95.0% 0.012 234.7)"
+        ],
+        "cssVar": "--rule (.dark)"
+      },
+      "rule-2-dark": {
+        "role": "neutral",
+        "displayName": "Pale Ruling (night)",
+        "canonical": "oklch(28.6% 0.020 236.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.010 236.3)",
+          "oklch(26.4% 0.013 236.3)",
+          "oklch(37.9% 0.016 236.3)",
+          "oklch(49.3% 0.018 236.3)",
+          "oklch(60.7% 0.018 236.3)",
+          "oklch(72.1% 0.016 236.3)",
+          "oklch(83.6% 0.013 236.3)",
+          "oklch(95.0% 0.010 236.3)"
+        ],
+        "cssVar": "--rule-2 (.dark)"
+      },
+      "mark-ink-dark": {
+        "role": "primary",
+        "displayName": "Survey Orange, night text lift",
+        "canonical": "oklch(70.6% 0.160 43.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.079 43.4)",
+          "oklch(26.4% 0.102 43.4)",
+          "oklch(37.9% 0.125 43.4)",
+          "oklch(49.3% 0.148 43.4)",
+          "oklch(60.7% 0.148 43.4)",
+          "oklch(72.1% 0.125 43.4)",
+          "oklch(83.6% 0.102 43.4)",
+          "oklch(95.0% 0.079 43.4)"
+        ],
+        "cssVar": "--mark-ink (.dark)"
+      },
+      "sage-ink-dark": {
+        "role": "secondary",
+        "displayName": "Sage Ink (night)",
+        "canonical": "oklch(76.4% 0.049 128.6)",
+        "tonalRamp": [
+          "oklch(15.0% 0.024 128.6)",
+          "oklch(26.4% 0.031 128.6)",
+          "oklch(37.9% 0.038 128.6)",
+          "oklch(49.3% 0.046 128.6)",
+          "oklch(60.7% 0.046 128.6)",
+          "oklch(72.1% 0.038 128.6)",
+          "oklch(83.6% 0.031 128.6)",
+          "oklch(95.0% 0.024 128.6)"
+        ],
+        "cssVar": "--sage-ink (.dark)"
+      },
+      "sage-tint-dark": {
+        "role": "secondary",
+        "displayName": "Sage Tint (night)",
+        "canonical": "oklch(28.3% 0.025 144.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.012 144.9)",
+          "oklch(26.4% 0.016 144.9)",
+          "oklch(37.9% 0.020 144.9)",
+          "oklch(49.3% 0.023 144.9)",
+          "oklch(60.7% 0.023 144.9)",
+          "oklch(72.1% 0.020 144.9)",
+          "oklch(83.6% 0.016 144.9)",
+          "oklch(95.0% 0.012 144.9)"
+        ],
+        "cssVar": "--sage-tint (.dark)"
+      },
+      "danger-dark": {
+        "role": "error",
+        "displayName": "Danger (night)",
+        "canonical": "oklch(74.4% 0.124 16.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.061 16.8)",
+          "oklch(26.4% 0.079 16.8)",
+          "oklch(37.9% 0.097 16.8)",
+          "oklch(49.3% 0.115 16.8)",
+          "oklch(60.7% 0.115 16.8)",
+          "oklch(72.1% 0.097 16.8)",
+          "oklch(83.6% 0.079 16.8)",
+          "oklch(95.0% 0.061 16.8)"
+        ],
+        "cssVar": "--danger (.dark)"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "One per page: the page question or title."
+      },
+      "prefix-hero": {
+        "displayName": "Prefix Hero",
+        "purpose": "The matched lot's prefix in the result record."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section heads above an ink rule, paired with a mono count."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running copy, 60 to 72ch."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Buttons and actions."
+      },
+      "note": {
+        "displayName": "Note",
+        "purpose": "Captions, hints, freshness line, breadcrumbs, legends."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Every prefix, address, region, count and figure."
+      },
+      "plat-label": {
+        "displayName": "Plat Label",
+        "purpose": "Uppercase block and lot names in the plat label row only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "popover-open",
+        "value": "0 8px 24px -12px rgb(0 0 0 / 0.35)",
+        "purpose": "Open multi-select dropdown only. The only shadow in the system."
+      }
+    ],
+    "motion": [
+      {
+        "name": "plat-point",
+        "value": "520ms cubic-bezier(0.16, 1, 0.3, 1); translateY(-6px) and opacity 0.35 to rest",
+        "purpose": "The queried point settles onto the plat. The one authored moment; removed under prefers-reduced-motion."
+      },
+      {
+        "name": "state-colors",
+        "value": "transition-colors (150ms default)",
+        "purpose": "Hover and stamp colour changes on buttons, rows and cells."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "40rem"
+      },
+      {
+        "name": "lg",
+        "value": "64rem"
+      },
+      {
+        "name": "page-max",
+        "value": "1440px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ink-filled action: Look up, Export CSV at rest, primary page links.",
+      "html": "<button class=\"ds-btn-primary\">Export CSV</button>",
+      "css": ".ds-btn-primary{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-btn-primary{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border:0;border-radius:3px;background:var(--ink);color:var(--on-ink);font:600 14px/1 var(--font-sans);cursor:pointer;transition:background-color .15s}.ds-btn-primary:hover{background:color-mix(in srgb,var(--ink) 85%,transparent)}.ds-btn-primary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action and stamped states; 1px ink stroke, sage-tint hover.",
+      "html": "<button class=\"ds-btn-outline\">Browse regions</button>",
+      "css": ".ds-btn-outline{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-btn-outline{display:inline-flex;align-items:center;height:40px;padding:0 16px;border:1px solid var(--ink);border-radius:3px;background:transparent;color:var(--ink);font:600 14px/1 var(--font-sans);cursor:pointer;transition:background-color .15s}.ds-btn-outline:hover{background:var(--sage-tint)}.ds-btn-outline:focus-visible{outline:2px solid var(--ink);outline-offset:2px}"
+    },
+    {
+      "name": "Copy Button (stamped)",
+      "kind": "button",
+      "refersTo": "button-stamped",
+      "description": "Copy prefix; stamps Copied in sage ink in place for two seconds.",
+      "html": "<button class=\"ds-copy\">Copy prefix</button> <button class=\"ds-copy is-copied\">Copied</button>",
+      "css": ".ds-copy{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-copy{display:inline-flex;align-items:center;height:32px;padding:0 12px;border:1px solid var(--ink);border-radius:3px;background:transparent;color:var(--ink);font:600 13px/1 var(--font-sans);cursor:pointer;transition:background-color .15s}.ds-copy:hover{background:var(--sage-tint)}.ds-copy.is-copied{border-color:var(--sage-ink);color:var(--sage-ink)}.ds-copy:focus-visible{outline:2px solid var(--ink);outline-offset:2px}"
+    },
+    {
+      "name": "Lookup Input",
+      "kind": "input",
+      "refersTo": "input-lookup",
+      "description": "The 48px mono lookup bar joined to its Look up button.",
+      "html": "<form class=\"ds-lookup\"><input class=\"ds-lookup-input\" placeholder=\"e.g. 3.5.140.2 or 2600:1f14::1\"><button class=\"ds-lookup-btn\" type=\"button\">Look up</button></form>",
+      "css": ".ds-lookup{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-lookup{display:flex;max-width:440px}.ds-lookup-input{flex:1;min-width:0;height:48px;padding:0 14px;border:1px solid var(--ink);border-right:0;border-radius:3px 0 0 3px;background:var(--paper);color:var(--ink);caret-color:var(--mark);font:400 18px var(--font-mono)}.ds-lookup-input::placeholder{color:var(--ink-2)}.ds-lookup-input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.ds-lookup-btn{height:48px;padding:0 20px;border:1px solid var(--ink);border-radius:0 3px 3px 0;background:var(--ink);color:var(--on-ink);font:600 14px var(--font-sans);cursor:pointer}.ds-lookup-btn:hover{background:color-mix(in srgb,var(--ink) 85%,transparent)}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Filter search and form fields: paper, rule stroke, darkens on hover and focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"Search prefix or service\">",
+      "css": ".ds-input{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-input{height:40px;width:280px;padding:0 12px;border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);font:400 14px var(--font-sans);transition:border-color .15s}.ds-input::placeholder{color:var(--ink-2)}.ds-input:hover{border-color:var(--ink-2)}.ds-input:focus-visible{border-color:var(--ink);outline:2px solid var(--ink);outline-offset:2px}"
+    },
+    {
+      "name": "Region Label",
+      "kind": "chip",
+      "refersTo": "region-label",
+      "description": "Mono region in a sage border; never shrinks or wraps; links fill sage tint on hover.",
+      "html": "<a class=\"ds-region\" href=\"#\">eu-central-1</a> <span class=\"ds-region\">us-east-1</span>",
+      "css": ".ds-region{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-region{display:inline-flex;justify-content:center;min-width:8.5rem;white-space:nowrap;padding:2px 8px;border:1px solid var(--sage);border-radius:2px;color:var(--ink);font:400 12px var(--font-mono);text-decoration:none}a.ds-region:hover{background:var(--sage-tint)}.ds-region:focus-visible{outline:2px solid var(--ink);outline-offset:2px}"
+    },
+    {
+      "name": "Header Navigation",
+      "kind": "nav",
+      "refersTo": "",
+      "description": "56px ruled header: wordmark, sage-underline links, quiet theme toggle.",
+      "html": "<header class=\"ds-nav\"><a class=\"ds-wordmark\" href=\"#\"><b>IPMap</b>AWS</a><nav><a class=\"ds-navlink\" href=\"#\">Regions</a><a class=\"ds-navlink\" href=\"#\">API docs</a><a class=\"ds-navlink\" href=\"#\">GitHub</a></nav></header>",
+      "css": ".ds-nav{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-nav{display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 24px;border-bottom:1px solid var(--rule);background:var(--ground);font-family:var(--font-sans)}.ds-wordmark{font-size:17px;letter-spacing:-.01em;color:var(--ink);text-decoration:none}.ds-wordmark b{font-weight:700}.ds-nav nav{display:flex;gap:20px}.ds-navlink{font-size:14px;font-weight:500;color:var(--ink);text-decoration:none;text-underline-offset:6px;text-decoration-color:var(--sage);text-decoration-thickness:1px}.ds-navlink:hover{text-decoration-line:underline}.ds-navlink:focus-visible{outline:2px solid var(--ink);outline-offset:2px}"
+    },
+    {
+      "name": "Lot Register Row",
+      "kind": "custom",
+      "refersTo": "register-row",
+      "description": "Numbered lot rows; the matched row fills sage tint with its prefix in orange text.",
+      "html": "<table class=\"ds-register\"><thead><tr><th>Lot no.</th><th>Prefix</th><th>Service</th></tr></thead><tbody><tr><td class=\"n\">1</td><td>3.5.136.0/22</td><td>S3</td></tr><tr class=\"is-matched\"><td class=\"n\">2</td><td class=\"p\">3.5.140.0/22</td><td>AMAZON</td></tr><tr><td class=\"n\">3</td><td>3.5.144.0/22</td><td>S3</td></tr></tbody></table>",
+      "css": ".ds-register{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-register{border-collapse:collapse;width:100%;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);font:400 13px var(--font-mono);font-variant-numeric:tabular-nums slashed-zero;color:var(--ink)}.ds-register th{height:36px;padding:0 12px;text-align:left;font:600 12px var(--font-sans);color:var(--ink-2);border-bottom:1px solid var(--ink)}.ds-register td{height:42px;padding:0 12px;border-bottom:1px solid var(--rule-2)}.ds-register tbody tr:hover{background:var(--paper)}.ds-register .n{font-weight:600;color:var(--sage-ink)}.ds-register tr.is-matched{background:var(--sage-tint)}.ds-register tr.is-matched .p{color:var(--mark-ink);font-weight:500}"
+    },
+    {
+      "name": "Matched Lot Record",
+      "kind": "card",
+      "refersTo": "matched-lot-card",
+      "description": "The answer: hero mono prefix, orange Matched lot label, ruled field grid.",
+      "html": "<div class=\"ds-lot\"><p class=\"ds-lot-prefix\">3.5.140.0/22</p><p class=\"ds-lot-meta\"><b>Matched lot</b> · <span>3.5.140.0 – 3.5.143.255</span> · <span>1,024 addresses</span></p><dl class=\"ds-lot-dl\"><div><dt>Region</dt><dd><span class=\"ds-region\">ap-northeast-2</span></dd></div><div><dt>Services</dt><dd>AMAZON · S3</dd></div></dl></div>",
+      "css": ".ds-lot{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-lot{max-width:460px;padding:12px 16px 16px;border:1px solid var(--ink);border-radius:4px;background:var(--paper);font-family:var(--font-sans);color:var(--ink)}.ds-lot-prefix{margin:0;font:600 30px/1.25 var(--font-mono);letter-spacing:-.02em}.ds-lot-meta{margin:4px 0 0;font-size:12px;color:var(--ink-2)}.ds-lot-meta b{color:var(--mark-ink)}.ds-lot-meta span{font-family:var(--font-mono)}.ds-lot-dl{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin:12px 0 0;padding-top:12px;border-top:1px solid var(--rule)}.ds-lot-dl dt{font-size:12px;color:var(--ink-2)}.ds-lot-dl dd{margin:4px 0 0;font-size:15px;font-weight:600}.ds-region{display:inline-flex;justify-content:center;min-width:8.5rem;padding:2px 8px;border:1px solid var(--sage);border-radius:2px;font:400 12px var(--font-mono)}"
+    },
+    {
+      "name": "Parcel Strip Band",
+      "kind": "custom",
+      "refersTo": "plat-figure",
+      "description": "One block band and its lot: label row above, hatched lots, orange matched lot, point on the lot band.",
+      "html": "<figure class=\"ds-plat\"><svg width=\"420\" height=\"190\" viewBox=\"0 0 420 190\"><defs><pattern id=\"ds-h\" width=\"5\" height=\"5\" patternUnits=\"userSpaceOnUse\" patternTransform=\"rotate(45)\"><rect width=\"5\" height=\"5\" fill=\"var(--sage-tint)\"/><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"5\" stroke=\"var(--sage)\" stroke-width=\"1.25\"/></pattern></defs><text x=\"0.5\" y=\"12\" class=\"lbl\" fill=\"var(--ink)\">BLOCK <tspan class=\"m\">3.5.0.0/16</tspan></text><text x=\"419.5\" y=\"12\" text-anchor=\"end\" class=\"sz\">65,536 addresses</text><rect x=\"0.5\" y=\"17\" width=\"419\" height=\"40\" fill=\"var(--paper)\" stroke=\"var(--ink)\"/><line x1=\"105\" x2=\"105\" y1=\"17\" y2=\"57\" stroke=\"var(--rule)\"/><line x1=\"210\" x2=\"210\" y1=\"17\" y2=\"57\" stroke=\"var(--rule)\"/><line x1=\"315\" x2=\"315\" y1=\"17\" y2=\"57\" stroke=\"var(--rule)\"/><rect x=\"200\" y=\"18\" width=\"40\" height=\"38\" fill=\"url(#ds-h)\" stroke=\"var(--sage)\" stroke-width=\".75\"/><rect x=\"225\" y=\"17\" width=\"3\" height=\"40\" fill=\"var(--mark)\"/><text x=\"0.5\" y=\"100\" class=\"lbl\" fill=\"var(--mark-ink)\">LOT <tspan class=\"m\">3.5.140.0/22</tspan></text><rect x=\"0.5\" y=\"105\" width=\"419\" height=\"60\" fill=\"var(--sage-tint)\" stroke=\"var(--sage)\" stroke-width=\"1.5\"/><circle cx=\"2\" cy=\"135\" r=\"4.5\" fill=\"var(--mark)\" stroke=\"var(--paper)\" stroke-width=\"1.5\" transform=\"translate(4 0)\"/></svg></figure>",
+      "css": ".ds-plat{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-plat{margin:0;padding:12px 20px;border:1px solid var(--rule);border-radius:4px;background:var(--paper)}.ds-plat .lbl{font:700 11px var(--font-sans);letter-spacing:.08em}.ds-plat .m{font-family:var(--font-mono);font-weight:600;letter-spacing:0}.ds-plat .sz{font:400 11px var(--font-mono);fill:var(--ink-2)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Cadastral Plat",
+    "overview": "AWS address space is surveyed land. A lookup is answered the way a land registry answers a parcel query: by drawing which lot, inside which larger block, contains the address, to scale. The interface is a drafting sheet on a cool film ground, ruled in 1px survey ink, with one survey-orange mark for the point in question and sage for the lots that exist. Everything else is the register: numbered lots, mono figures, plain labels.\n\nDensity is operational, not decorative. The reader is mid-task next to a terminal or a firewall console, so the answer sits at the top left, the plat sits beside it, and the lot register runs full width below. Hierarchy comes from ruling weight (ink rules divide sections, pale rules divide rows), from type weight, and from the one reserved color, never from cards, shadows or tinted panels stacked on each other.\n\nThe system refuses the category default of a search bar floating over an undifferentiated table. Neutrals are a fixed tonal ramp; linework is 1px; lots are hatched or tinted, never shadowed.",
+    "keyCharacteristics": [
+      "Cool drafting-film ground (not cream) with survey-ink linework, and a night-ink dark theme on the same roles.",
+      "Survey orange is reserved for the queried point and the matched lot, nothing else.",
+      "Every prefix, address, count and figure is set in a tabular, slashed-zero mono.",
+      "Sections are divided by full-width 1px ink rules; rows by pale rules.",
+      "Flat: depth is drawn (hatching, outlined windows, dashed fans), not cast."
+    ],
+    "rules": [
+      {
+        "name": "The Survey Orange Rule",
+        "body": "Orange marks exactly two things: the queried point and the matched lot (with its \"Matched lot\" label and its row in the register). Fills use mark; orange text uses mark-ink, which lifts to mark-ink-dark on the night ground. If something orange is neither the point nor the lot, it is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sage Is Published Rule",
+        "body": "Sage means \"AWS publishes this\": lots, regions, stamped success. Sage never marks the query and never decorates.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fixed Ramp Rule",
+        "body": "Neutrals come from the ramp (ground, paper, ink, ink-2, rule, rule-2). Do not invent intermediate greys; a new surface picks a ramp step. The one sanctioned derivative is the 85% ink hover on ink fills.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono Figure Rule",
+        "body": "Every prefix, address, count, region code and figure is mono, with tabular numerals and a slashed zero. Words are sans.",
+        "section": "typography"
+      },
+      {
+        "name": "The Region Label Rule",
+        "body": "Region labels are mono 12px in a 1px sage border, at least 8.5rem wide, and never shrink or wrap.",
+        "section": "typography"
+      },
+      {
+        "name": "The Whole Cell Rule",
+        "body": "Index grids reflow in whole ruled cells; a cell never narrows below its minimum to fit one more column.",
+        "section": "layout"
+      },
+      {
+        "name": "The Drawn Depth Rule",
+        "body": "Lots are hatched or tinted, never shadowed. The single permitted shadow belongs to a popover that is open over other content.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Label Row Rule",
+        "body": "Plat labels sit in a row above each band, never inside it. A tick label that would collide with a leader line or a neighbour is dropped, never overlapped or shrunk.",
+        "section": "components"
+      },
+      {
+        "name": "The One Lot Rule",
+        "body": "Records that share a prefix are one lot. Group them; list their services and regions together; never repeat the prefix as separate answers.",
+        "section": "components"
+      },
+      {
+        "name": "The Numbered Lot Rule",
+        "body": "Register rows are numbered as lots, in sage ink, continuing across pages.",
+        "section": "components"
+      },
+      {
+        "name": "The Stamp In Place Rule",
+        "body": "Copy and export report their state in the control that was pressed, in sage ink or danger, and then return to rest. No toasts.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do reserve survey orange for the queried point and the matched lot, its \"Matched lot\" label and its register row; fills in mark, text in mark-ink (the lifted mark-ink-dark on the night ground).",
+      "Do group records that share a prefix into one lot.",
+      "Do put plat labels in a row above each band and drop a colliding tick label rather than overlap it.",
+      "Do number register rows as lots, in sage ink.",
+      "Do set every prefix, address, count and figure in the mono with tabular numerals and slashed zero.",
+      "Do open each section with a full-width 1px ink rule and a headline paired with its mono count.",
+      "Do keep region labels at their full width (8.5rem minimum, no wrap) and let index grids reflow in whole cells.",
+      "Do stamp copy and export results in place."
+    ],
+    "donts": [
+      "Don't use orange for links, hovers, focus, headings, badges or any status other than the point and the matched lot.",
+      "Don't cast shadows on cards, bands, lots or rows; the open popover is the only shadow.",
+      "Don't set labels or figures inside a plat band, and don't scale the plat down so its text shrinks.",
+      "Don't introduce warm or cream grounds, or greys outside the fixed neutral ramp.",
+      "Don't use uppercase tracked labels outside the plat label row.",
+      "Don't use corners larger than 4px on surfaces or controls."
+    ]
+  }
+}
