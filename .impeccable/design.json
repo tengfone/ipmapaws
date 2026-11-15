@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-15T05:20:39.929Z",
+  "generatedAt": "2026-11-15T05:58:02.354Z",
   "title": "Design System: IPMapAWS",
   "extensions": {
     "colorMeta": {
@@ -386,6 +386,34 @@
         "displayName": "Headline",
         "purpose": "Section heads above an ink rule, paired with a mono count."
       },
+      "display-phone": {
+        "displayName": "Display (phones)",
+        "purpose": "Page title below 40rem."
+      },
+      "prefix-hero-phone": {
+        "displayName": "Prefix Hero (phones)",
+        "purpose": "Matched prefix below 40rem."
+      },
+      "lookup-input": {
+        "displayName": "Lookup Input",
+        "purpose": "Single-address lookup field from 40rem."
+      },
+      "lookup-input-phone": {
+        "displayName": "Lookup Input (phones)",
+        "purpose": "Single-address lookup field below 40rem."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "Header wordmark only."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Legends, column heads, field labels, popover descriptions."
+      },
+      "data-label": {
+        "displayName": "Data Label",
+        "purpose": "Mono 12px for region labels, chips, index counts, method badges."
+      },
       "body": {
         "displayName": "Body",
         "purpose": "Running copy, 60 to 72ch."
@@ -411,7 +439,7 @@
       {
         "name": "popover-open",
         "value": "0 8px 24px -12px rgb(0 0 0 / 0.35)",
-        "purpose": "Open multi-select dropdown only. The only shadow in the system."
+        "purpose": "Open popovers only: the multi-select list and the Copy as menu. The only shadow in the system."
       }
     ],
     "motion": [
@@ -515,6 +543,22 @@
       "css": ".ds-lot{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-lot{max-width:460px;padding:12px 16px 16px;border:1px solid var(--ink);border-radius:4px;background:var(--paper);font-family:var(--font-sans);color:var(--ink)}.ds-lot-prefix{margin:0;font:600 30px/1.25 var(--font-mono);letter-spacing:-.02em}.ds-lot-meta{margin:4px 0 0;font-size:12px;color:var(--ink-2)}.ds-lot-meta b{color:var(--mark-ink)}.ds-lot-meta span{font-family:var(--font-mono)}.ds-lot-dl{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin:12px 0 0;padding-top:12px;border-top:1px solid var(--rule)}.ds-lot-dl dt{font-size:12px;color:var(--ink-2)}.ds-lot-dl dd{margin:4px 0 0;font-size:15px;font-weight:600}.ds-region{display:inline-flex;justify-content:center;min-width:8.5rem;padding:2px 8px;border:1px solid var(--sage);border-radius:2px;font:400 12px var(--font-mono)}"
     },
     {
+      "name": "Copy As Popover",
+      "kind": "custom",
+      "refersTo": "copy-as-popover",
+      "description": "Allow-list formats menu under the Copy as trigger; the open-popover shadow.",
+      "html": "<div class=\"ds-copyas\"><button class=\"ds-copyas-trigger\" aria-expanded=\"true\">Copy as <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\"><path d=\"m18 15-6-6-6 6\"/></svg></button><div class=\"ds-copyas-pop\"><p class=\"ds-copyas-head\">Every matching row, deduplicated and sorted from <span>312</span> records</p><ul><li><div><p class=\"n\">Plain CIDR list</p><p class=\"d\">One prefix per line, IPv4 then IPv6</p></div><span><a href=\"#\">Copy</a><a href=\"#\">.txt</a></span></li><li><div><p class=\"n\">nginx allow</p><p class=\"d\">allow lines for an nginx location</p></div><span><a href=\"#\">Copy</a><a href=\"#\">.conf</a></span></li></ul></div></div>",
+      "css": ".ds-copyas{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-copyas{position:relative;display:inline-block;padding-bottom:180px;font-family:var(--font-sans)}.ds-copyas-trigger{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border:1px solid var(--ink);border-radius:3px;background:transparent;color:var(--ink);font:600 14px var(--font-sans);cursor:pointer}.ds-copyas-trigger:hover{background:var(--sage-tint)}.ds-copyas-trigger:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.ds-copyas-pop{position:absolute;left:0;top:44px;width:min(24rem,90vw);padding:4px 0;border:1px solid var(--ink);border-radius:3px;background:var(--paper);box-shadow:0 8px 24px -12px rgb(0 0 0/.35)}.ds-copyas-head{margin:0;padding:6px 12px 8px;border-bottom:1px solid var(--rule);font-size:12px;color:var(--ink-2)}.ds-copyas-head span{font-family:var(--font-mono);color:var(--ink)}.ds-copyas ul{margin:0;padding:0;list-style:none}.ds-copyas li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid var(--rule-2)}.ds-copyas li:last-child{border-bottom:0}.ds-copyas p{margin:0}.ds-copyas .n{font-size:13px;font-weight:600;color:var(--ink)}.ds-copyas .d{font-size:12px;color:var(--ink-2)}.ds-copyas li span{display:flex;gap:12px}.ds-copyas a{font-size:13px;font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-color:var(--sage);text-underline-offset:4px}.ds-copyas a:hover{text-decoration-color:var(--ink)}"
+    },
+    {
+      "name": "Bulk Lookup Table",
+      "kind": "custom",
+      "refersTo": "bulk-row",
+      "description": "Numbered bulk rows; the selected row (drawn on the plat) fills sage tint with its lot in orange text.",
+      "html": "<table class=\"ds-bulk\"><thead><tr><th>#</th><th>Input</th><th>Lot</th><th>Service</th></tr></thead><tbody><tr><td class=\"n\">1</td><td><button>3.5.140.2</button></td><td>3.5.140.0/22</td><td class=\"s\">S3</td></tr><tr class=\"is-selected\"><td class=\"n\">2</td><td><button aria-pressed=\"true\">52.94.76.10</button></td><td class=\"p\">52.94.76.0/22</td><td class=\"s\">AMAZON</td></tr><tr><td class=\"n\">3</td><td>10.0.0.1</td><td class=\"s x\">Not AWS</td><td></td></tr><tr><td class=\"n\">4</td><td class=\"x\">foo</td><td class=\"s\"><b>Invalid</b> <small>· not an address</small></td><td></td></tr></tbody></table>",
+      "css": ".ds-bulk{--ground:#eef0ec;--paper:#f8f9f6;--ink:#1d2b36;--ink-2:#4f5d67;--on-ink:#eef0ec;--rule:#c3cac2;--rule-2:#dde1da;--mark:#c2410c;--mark-ink:#b13a0a;--sage:#7c8a6e;--sage-ink:#4e5b43;--sage-tint:#dfe5d6;--danger:#a3222d;--font-sans:'Public Sans',ui-sans-serif,system-ui,sans-serif;--font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;}.ds-bulk{border-collapse:collapse;width:100%;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);font:400 13px var(--font-mono);font-variant-numeric:tabular-nums slashed-zero;color:var(--ink)}.ds-bulk th{height:36px;padding:0 12px;text-align:left;font:600 12px var(--font-sans);color:var(--ink-2);background:var(--ground);border-bottom:1px solid var(--ink)}.ds-bulk td{height:38px;padding:0 12px;border-bottom:1px solid var(--rule-2)}.ds-bulk tbody tr:hover{background:var(--paper)}.ds-bulk .n{color:var(--sage-ink)}.ds-bulk .s{font-family:var(--font-sans)}.ds-bulk .x{color:var(--ink-2)}.ds-bulk b{color:var(--danger)}.ds-bulk small{font-size:12px;color:var(--ink-2)}.ds-bulk button{border:0;padding:0;background:none;font:inherit;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:4px}.ds-bulk button:hover{text-decoration-color:var(--sage)}.ds-bulk button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.ds-bulk tr.is-selected{background:var(--sage-tint)}.ds-bulk tr.is-selected .p{color:var(--mark-ink);font-weight:500}"
+    },
+    {
       "name": "Parcel Strip Band",
       "kind": "custom",
       "refersTo": "plat-figure",
@@ -536,7 +580,7 @@
     "rules": [
       {
         "name": "The Survey Orange Rule",
-        "body": "Orange marks exactly two things: the queried point and the matched lot (with its \"Matched lot\" label and its row in the register). Fills use mark; orange text uses mark-ink, which lifts to mark-ink-dark on the night ground. If something orange is neither the point nor the lot, it is wrong.",
+        "body": "Orange marks exactly two things: the queried point and the matched lot (with its \"Matched lot\" label, its row in the register, and the lot of the selected bulk row, which is the one drawn on the plat). Fills use mark; orange text uses mark-ink, which lifts to mark-ink-dark on the night ground. If something orange is neither the point nor the lot, it is wrong.",
         "section": "colors"
       },
       {
@@ -566,7 +610,7 @@
       },
       {
         "name": "The Drawn Depth Rule",
-        "body": "Lots are hatched or tinted, never shadowed. The single permitted shadow belongs to a popover that is open over other content.",
+        "body": "Lots are hatched or tinted, never shadowed. The single permitted shadow belongs to a popover that is open over other content (select list, Copy as menu).",
         "section": "elevation"
       },
       {
@@ -581,28 +625,28 @@
       },
       {
         "name": "The Numbered Lot Rule",
-        "body": "Register rows are numbered as lots, in sage ink, continuing across pages.",
+        "body": "Register and bulk rows are numbered as lots, in sage ink; register numbers continue across pages.",
         "section": "components"
       },
       {
         "name": "The Stamp In Place Rule",
-        "body": "Copy and export report their state in the control that was pressed, in sage ink or danger, and then return to rest. No toasts.",
+        "body": "Copy, Copy as and export report their state in the control that was pressed, in sage ink or danger, and then return to rest. No toasts.",
         "section": "components"
       }
     ],
     "dos": [
-      "Do reserve survey orange for the queried point and the matched lot, its \"Matched lot\" label and its register row; fills in mark, text in mark-ink (the lifted mark-ink-dark on the night ground).",
+      "Do reserve survey orange for the queried point and the matched lot, its \"Matched lot\" label, its register row and the selected bulk row's lot; fills in mark, text in mark-ink (the lifted mark-ink-dark on the night ground).",
       "Do group records that share a prefix into one lot.",
       "Do put plat labels in a row above each band and drop a colliding tick label rather than overlap it.",
-      "Do number register rows as lots, in sage ink.",
+      "Do number register and bulk rows as lots, in sage ink.",
       "Do set every prefix, address, count and figure in the mono with tabular numerals and slashed zero.",
       "Do open each section with a full-width 1px ink rule and a headline paired with its mono count.",
       "Do keep region labels at their full width (8.5rem minimum, no wrap) and let index grids reflow in whole cells.",
-      "Do stamp copy and export results in place."
+      "Do stamp copy, Copy as and export results in place."
     ],
     "donts": [
       "Don't use orange for links, hovers, focus, headings, badges or any status other than the point and the matched lot.",
-      "Don't cast shadows on cards, bands, lots or rows; the open popover is the only shadow.",
+      "Don't cast shadows on cards, bands, lots or rows; open popovers (select list, Copy as menu) are the only shadow.",
       "Don't set labels or figures inside a plat band, and don't scale the plat down so its text shrinks.",
       "Don't introduce warm or cream grounds, or greys outside the fixed neutral ramp.",
       "Don't use uppercase tracked labels outside the plat label row.",

@@ -111,6 +111,7 @@ export default function RegionPage({ region, initialData }: RegionPageProps) {
         region={region}
         loading={isLoading}
         heading="Prefix register"
+        createDate={lastUpdated}
       />
 
       {services.length > 0 && (

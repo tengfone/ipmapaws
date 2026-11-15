@@ -2,10 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { CopyButton } from '@/components/CopyButton';
+import { BulkForm, BulkResults } from '@/components/BulkLookup';
 import { DataStatus } from '@/components/DataStatus';
 import { ParcelStrip } from '@/components/ParcelStrip';
 import { RegionLabel } from '@/components/PrefixTable';
 import { useAWSIPRanges } from '@/hooks/useAWSIPRanges';
+import { viewUrl } from '@/hooks/useUrlState';
+import { parseBulkInput, runBulkLookup } from '@/lib/bulk';
 import {
   getPrefixIndex,
   InvalidLookupQueryError,
@@ -14,6 +17,7 @@ import {
   PrefixLookupResult,
 } from '@/lib/lookup';
 import { buildPlat, describeRange, describeSize, PlatModel } from '@/lib/plat';
+import { parseViewParams } from '@/lib/url-state';
 import { cn } from '@/lib/utils';
 import { CombinedPrefix } from '@/types';
 
@@ -113,6 +117,13 @@ function examplePlat(index: PrefixIndex): PlatModel | null {
 interface PrefixLookupProps {
   /** Heading level for the question; the home page makes it the page's h1. */
   headingAs?: 'h1' | 'h2';
+  /**
+   * The submitted query when the caller keeps it (the home page keeps it in
+   * the URL as ?ip=). Omit to let the component keep it itself.
+   */
+  query?: string | null;
+  /** Called with a new query to submit, when `query` is controlled. */
+  onQuery?: (query: string | null) => void;
   /** Called with the best match's prefix (or null) after each lookup. */
   onBestMatch?: (prefix: string | null) => void;
   /** Offered on the result: filter the register below to this prefix. */
@@ -129,23 +140,66 @@ interface PrefixLookupProps {
  */
 export function PrefixLookup({
   headingAs = 'h2',
+  query,
+  onQuery,
   onBestMatch,
   onShowInRegister,
 }: PrefixLookupProps) {
   const { data, isLoading, error: loadError } = useAWSIPRanges();
-  const [value, setValue] = useState('');
-  const [submitted, setSubmitted] = useState<string | null>(null);
+  const controlled = query !== undefined;
+  const [localQuery, setLocalQuery] = useState<string | null>(null);
+  const [draft, setDraft] = useState<string | null>(null);
+  const [emptyAttempt, setEmptyAttempt] = useState(false);
+  const submitted = controlled ? query : localQuery;
+  const value = draft ?? submitted ?? '';
+
+  // Bulk mode: many entries at once, one of them drawn on the plat.
+  const [mode, setMode] = useState<'single' | 'bulk'>('single');
+  const [bulkText, setBulkText] = useState('');
+  const [bulkSubmitted, setBulkSubmitted] = useState<string | null>(null);
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
 
   const index = useMemo(() => (data ? getPrefixIndex(data) : null), [data]);
 
+  const bulkParsed = useMemo(
+    () => (bulkSubmitted === null ? null : parseBulkInput(bulkSubmitted)),
+    [bulkSubmitted]
+  );
+  const bulkRows = useMemo(
+    () =>
+      index && bulkParsed ? runBulkLookup(index, bulkParsed.tokens) : null,
+    [index, bulkParsed]
+  );
+  const activeRow = useMemo(() => {
+    if (!bulkRows) return null;
+    const i = selectedRow ?? bulkRows.findIndex((row) => row.status === 'aws');
+    return i >= 0 ? i : null;
+  }, [bulkRows, selectedRow]);
+
   const state: LookupState = useMemo(() => {
-    if (submitted === null) return { status: 'idle' };
-    if (!submitted.trim()) {
+    if (mode === 'bulk') {
+      if (bulkSubmitted === null) return { status: 'idle' };
+      if (!bulkRows) {
+        return loadError && !isLoading
+          ? {
+              status: 'error',
+              message:
+                'AWS IP ranges could not be loaded. Please try again later.',
+            }
+          : { status: 'waiting' };
+      }
+      const row = activeRow === null ? null : bulkRows[activeRow];
+      return row?.result
+        ? { status: 'done', result: row.result }
+        : { status: 'idle' };
+    }
+    if (emptyAttempt) {
       return {
         status: 'error',
         message: 'Enter an IPv4 address, IPv6 address, or CIDR prefix.',
       };
     }
+    if (submitted === null) return { status: 'idle' };
     if (!index) {
       if (loadError && !isLoading) {
         return {
@@ -163,7 +217,17 @@ export function PrefixLookup({
       }
       return { status: 'error', message: 'Lookup failed. Please try again.' };
     }
-  }, [submitted, index, loadError, isLoading]);
+  }, [
+    mode,
+    bulkSubmitted,
+    bulkRows,
+    activeRow,
+    emptyAttempt,
+    submitted,
+    index,
+    loadError,
+    isLoading,
+  ]);
 
   const result = state.status === 'done' ? state.result : null;
   const containingLots = useMemo(
@@ -197,15 +261,31 @@ export function PrefixLookup({
     [index, result]
   );
 
-  const lookUp = (query: string) => {
-    setValue(query);
-    setSubmitted(query);
+  const lookUp = (text: string) => {
+    setDraft(null);
+    const trimmed = text.trim();
+    if (!trimmed) {
+      setEmptyAttempt(true);
+      return;
+    }
+    setEmptyAttempt(false);
+    if (controlled) onQuery?.(trimmed);
+    else setLocalQuery(trimmed);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitted(value);
+    lookUp(value);
   };
+
+  const switchMode = (next: 'single' | 'bulk') => {
+    setMode(next);
+    if (next === 'bulk' && !bulkText && submitted) setBulkText(submitted);
+  };
+
+  /** Link to this page with the given lookup, keeping the register's filters. */
+  const shareUrl = (ip: string) => () =>
+    viewUrl({ ...parseViewParams(window.location.search), ip });
 
   const Heading = headingAs;
   const isRange = result ? result.query.includes('/') : false;
@@ -223,43 +303,79 @@ export function PrefixLookup({
           Which AWS prefix contains this IP?
         </Heading>
 
-        <form onSubmit={handleSubmit} className="mt-4 flex">
-          <label htmlFor="prefix-lookup" className="sr-only">
-            IP address or CIDR
-          </label>
-          <input
-            id="prefix-lookup"
-            type="text"
-            inputMode="text"
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            placeholder="e.g. 3.5.140.2 or 2600:1f14::1"
-            autoComplete="off"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            maxLength={256}
-            aria-describedby="prefix-lookup-hint"
-            aria-invalid={state.status === 'error' ? true : undefined}
-            className={cn(
-              'h-12 min-w-0 flex-1 rounded-l-md border border-r-0 bg-paper px-3.5 font-mono text-[18px] text-ink sm:text-[20px]',
-              state.status === 'error' ? 'border-danger' : 'border-ink'
-            )}
-          />
-          <button
-            type="submit"
-            className="h-12 shrink-0 rounded-r-md border border-ink bg-ink px-5 text-sm font-semibold text-on-ink transition-colors hover:bg-ink/85"
-          >
-            Look up
-          </button>
-        </form>
-        <p id="prefix-lookup-hint" className="mt-2 text-[13px] text-ink-2">
-          IPv4 or IPv6, address or CIDR. Most specific match first; for a CIDR,
-          also the prefixes inside it. Runs in your browser.
-        </p>
+        {mode === 'single' ? (
+          <>
+            <form onSubmit={handleSubmit} className="mt-4 flex">
+              <label htmlFor="prefix-lookup" className="sr-only">
+                IP address or CIDR
+              </label>
+              <input
+                id="prefix-lookup"
+                type="text"
+                inputMode="text"
+                value={value}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="e.g. 3.5.140.2 or 2600:1f14::1"
+                autoComplete="off"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                maxLength={256}
+                aria-describedby="prefix-lookup-hint"
+                aria-invalid={state.status === 'error' ? true : undefined}
+                className={cn(
+                  'h-12 min-w-0 flex-1 rounded-l-md border border-r-0 bg-paper px-3.5 font-mono text-[18px] text-ink sm:text-[20px]',
+                  state.status === 'error' ? 'border-danger' : 'border-ink'
+                )}
+              />
+              <button
+                type="submit"
+                className="h-12 shrink-0 rounded-r-md border border-ink bg-ink px-5 text-sm font-semibold text-on-ink transition-colors hover:bg-ink/85"
+              >
+                Look up
+              </button>
+            </form>
+            <p id="prefix-lookup-hint" className="mt-2 text-[13px] text-ink-2">
+              IPv4 or IPv6, address or CIDR. Most specific match first; for a
+              CIDR, also the prefixes inside it. Runs in your browser.{' '}
+              <button
+                type="button"
+                onClick={() => switchMode('bulk')}
+                className="rounded-sm font-semibold text-ink underline decoration-sage underline-offset-4 hover:decoration-ink"
+              >
+                Look up a list
+              </button>
+            </p>
+          </>
+        ) : (
+          <>
+            <BulkForm
+              text={bulkText}
+              onTextChange={setBulkText}
+              onSubmit={() => {
+                setBulkSubmitted(bulkText);
+                setSelectedRow(null);
+              }}
+              onClear={() => {
+                setBulkText('');
+                setBulkSubmitted(null);
+                setSelectedRow(null);
+              }}
+            />
+            <p className="mt-1 text-[13px] text-ink-2">
+              <button
+                type="button"
+                onClick={() => switchMode('single')}
+                className="rounded-sm font-semibold text-ink underline decoration-sage underline-offset-4 hover:decoration-ink"
+              >
+                Look up a single address
+              </button>
+            </p>
+          </>
+        )}
 
         <div aria-live="polite" className="mt-5 space-y-4">
-          {state.status === 'idle' && (
+          {state.status === 'idle' && mode === 'single' && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-ink-2">
               <span>Try</span>
               {TRY_QUERIES.map((q) => (
@@ -333,6 +449,7 @@ export function PrefixLookup({
                       key={`lot-${lot.prefix}`}
                       lot={lot}
                       query={result.query}
+                      shareUrl={shareUrl(result.query)}
                       onShowInRegister={onShowInRegister}
                     />
                   ) : (
@@ -439,6 +556,17 @@ export function PrefixLookup({
         lastUpdated={data?.createDate}
         syncToken={data?.syncToken}
       />
+
+      {mode === 'bulk' && bulkRows && bulkParsed && (
+        <BulkResults
+          rows={bulkRows}
+          total={bulkParsed.total}
+          skippedLines={bulkParsed.skippedLines}
+          selected={activeRow}
+          onSelect={setSelectedRow}
+          createDate={data?.createDate}
+        />
+      )}
     </section>
   );
 }
@@ -446,10 +574,12 @@ export function PrefixLookup({
 function MatchedLot({
   lot,
   query,
+  shareUrl,
   onShowInRegister,
 }: {
   lot: Lot;
   query: string;
+  shareUrl: () => string;
   onShowInRegister?: (prefix: string) => void;
 }) {
   const range = describeRange(lot.prefix);
@@ -516,6 +646,7 @@ function MatchedLot({
       </dl>
       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-rule pt-3">
         <CopyButton value={summaryLine(query, lot)} label="Copy summary" />
+        <CopyButton value={shareUrl} label="Copy link" />
         {onShowInRegister && (
           <button
             type="button"

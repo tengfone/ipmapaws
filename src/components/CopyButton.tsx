@@ -5,8 +5,8 @@ import { copyToClipboard } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 interface CopyButtonProps {
-  /** Text placed on the clipboard. */
-  value: string;
+  /** Text placed on the clipboard, or a function that builds it at click time. */
+  value: string | (() => string);
   /** Visible label before copying, e.g. "Copy prefix". */
   label?: string;
   /** What is being copied, for the accessible name, e.g. "3.5.140.0/22". */
@@ -29,7 +29,8 @@ export function CopyButton({
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const handleClick = async () => {
-    if (!(await copyToClipboard(value))) return;
+    if (!(await copyToClipboard(typeof value === 'function' ? value() : value)))
+      return;
     setCopied(true);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setCopied(false), 2000);

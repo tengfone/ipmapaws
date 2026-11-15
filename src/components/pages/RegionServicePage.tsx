@@ -154,6 +154,7 @@ export default function RegionServicePage({
         service={service}
         loading={isLoading}
         heading="Prefix register"
+        createDate={lastUpdated}
       />
 
       {borderGroups.length > 0 && (

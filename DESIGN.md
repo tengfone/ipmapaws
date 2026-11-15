@@ -32,6 +32,12 @@ typography:
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "-0.015em"
+  display-phone:
+    fontFamily: "Public Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "26px"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "-0.015em"
   prefix-hero:
     fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
     fontSize: "30px"
@@ -39,6 +45,26 @@ typography:
     lineHeight: 1.25
     letterSpacing: "-0.02em"
     fontFeature: "'zero' 1, 'tnum' 1"
+  prefix-hero-phone:
+    fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontSize: "26px"
+    fontWeight: 600
+    lineHeight: 1.25
+    letterSpacing: "-0.02em"
+  lookup-input:
+    fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontSize: "20px"
+    fontWeight: 400
+    fontFeature: "'zero' 1, 'tnum' 1"
+  lookup-input-phone:
+    fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontSize: "18px"
+    fontWeight: 400
+  wordmark:
+    fontFamily: "Public Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "17px"
+    fontWeight: 700
+    letterSpacing: "-0.01em"
   headline:
     fontFamily: "Public Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.125rem"
@@ -60,6 +86,16 @@ typography:
     fontSize: "13px"
     fontWeight: 400
     lineHeight: 1.5
+  label:
+    fontFamily: "Public Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: 1.5
+  data-label:
+    fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontSize: "12px"
+    fontWeight: 400
+    fontFeature: "'zero' 1, 'tnum' 1"
   data:
     fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
     fontSize: "13px"
@@ -75,6 +111,7 @@ rounded:
   sm: "2px"
   md: "3px"
   lg: "4px"
+  scrollbar: "6px"
 spacing:
   gutter-phone: "16px"
   gutter-tablet: "24px"
@@ -85,6 +122,7 @@ spacing:
   control-sm: "32px"
   control-lookup: "48px"
   register-row: "42px"
+  bulk-row: "38px"
 components:
   button-primary:
     backgroundColor: "{colors.ink}"
@@ -146,6 +184,34 @@ components:
   register-row-matched:
     backgroundColor: "{colors.sage-tint}"
     textColor: "{colors.mark-ink}"
+  bulk-input:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.ink}"
+    typography: "{typography.data}"
+    rounded: "{rounded.md}"
+    padding: "10px 14px"
+    height: "9.5rem"
+  bulk-row:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    typography: "{typography.data}"
+    height: "38px"
+  bulk-row-selected:
+    backgroundColor: "{colors.sage-tint}"
+    textColor: "{colors.mark-ink}"
+  copy-as-trigger:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    typography: "{typography.control}"
+    rounded: "{rounded.md}"
+    padding: "0 16px"
+    height: "40px"
+  copy-as-popover:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.md}"
+    padding: "4px 0"
+    width: "24rem"
   matched-lot-card:
     backgroundColor: "{colors.paper}"
     textColor: "{colors.ink}"
@@ -188,7 +254,7 @@ A cool grey-green survey sheet in two values of ink, one reserved orange, and a 
 
 ### Primary
 - **Survey Orange** (mark): the fill of the queried point, the matched lot's position inside each block band, the CIDR query span (at 22% tint with a 1.5px orange stroke) and the legend swatches for those two things. Identical in both themes.
-- **Survey Orange, text weight** (mark-ink; mark-ink-dark in the dark theme): the same reservation set as text: the matched lot's band label in the plat, the queried address label under its leader, the "Matched lot" label in the result record, and the prefix of the matched row in the register. The dark value is a contrast lift of the fill, not a second accent.
+- **Survey Orange, text weight** (mark-ink; mark-ink-dark in the dark theme): the same reservation set as text: the matched lot's band label in the plat, the queried address label under its leader, the "Matched lot" label in the result record, the prefix of the matched row in the register, and the lot prefix of the selected bulk row. The dark value is a contrast lift of the fill, not a second accent.
 
 ### Secondary
 - **Lot Sage** (sage): published AWS prefixes. Hatch strokes in the plat, the 1.5px outline of the lot band, region-label borders, link underline decoration, selection highlight (38% mix).
@@ -206,7 +272,7 @@ A cool grey-green survey sheet in two values of ink, one reserved orange, and a 
 - **Danger** (danger / danger-dark): error borders, error headings, failed export state. Never used decoratively.
 
 ### Named Rules
-**The Survey Orange Rule.** Orange marks exactly two things: the queried point and the matched lot (with its "Matched lot" label and its row in the register). Fills use mark; orange text uses mark-ink, which lifts to mark-ink-dark on the night ground. If something orange is neither the point nor the lot, it is wrong.
+**The Survey Orange Rule.** Orange marks exactly two things: the queried point and the matched lot (with its "Matched lot" label, its row in the register, and the lot of the selected bulk row, which is the one drawn on the plat). Fills use mark; orange text uses mark-ink, which lifts to mark-ink-dark on the night ground. If something orange is neither the point nor the lot, it is wrong.
 
 **The Sage Is Published Rule.** Sage means "AWS publishes this": lots, regions, stamped success. Sage never marks the query and never decorates.
 
@@ -221,13 +287,16 @@ A cool grey-green survey sheet in two values of ink, one reserved orange, and a 
 **Character:** A plain public-sector workhorse sans for words, a tabular mono for every number a reader might copy. The pairing reads like a registry sheet: labels in sans, values in mono.
 
 ### Hierarchy
-- **Display** (700, 26px on phones to 28px, 1.2, -0.015em): one per page, the page question or title ("Which AWS prefix contains this IP?", region titles, Page not found). Region names inside it switch to mono.
-- **Prefix Hero** (mono 600, 26px to 30px, tight, -0.02em): the matched lot's prefix in the result record. The largest figure on the page.
+- **Display** (700, display-phone 26px to display 28px from 40rem, 1.2, -0.015em): one per page, the page question or title ("Which AWS prefix contains this IP?", region titles, Page not found). Region names inside it switch to mono.
+- **Prefix Hero** (mono 600, prefix-hero-phone 26px to prefix-hero 30px from 40rem, tight, -0.02em): the matched lot's prefix in the result record. The largest figure on the page.
 - **Headline** (700, 1.125rem, -0.01em): section heads above an ink rule (Prefix register, Regions, endpoint summaries), paired on the baseline with a mono count.
 - **Body** (400, 0.9375rem, 1.5): running copy, capped near 60 to 72ch.
 - **Control** (600, 0.875rem): buttons and actions; 13px for small buttons and text actions.
-- **Note** (400, 13px; 12px for legends, column heads and field labels): captions, hints, freshness line, breadcrumbs.
-- **Data** (mono, 13px; 14px in lot rows, 18px to 20px in the lookup input): prefixes, addresses, regions, border groups, counts, page numbers.
+- **Note** (400, 13px): captions, hints, freshness line, breadcrumbs.
+- **Label** (400, 12px; semibold for column heads): legends, table column heads, field labels, popover descriptions; in mono (data-label) for region labels, chips, counts in index cells and method badges.
+- **Lookup Input** (mono 400, 18px on phones to 20px from 40rem): the single-address lookup field.
+- **Wordmark** (17px, "IPMap" 700 then "AWS" 400, -0.01em): the header wordmark only.
+- **Data** (mono, 13px; 14px in lot rows and the bulk input): prefixes, addresses, regions, border groups, counts, page numbers.
 - **Plat Label** (700, 11px, 0.08em, uppercase): block and lot names in the plat label row only ("BLOCK", "LOT", "IPV4 SPACE"), followed by the CIDR in mono 600 with no tracking.
 
 ### Named Rules
@@ -241,7 +310,7 @@ A centred column up to 1440px with 16px gutters on phones, 24px from 40rem and 4
 
 Below the fold, each section opens with a full-width 1px ink rule, 56px above it (48px on region pages) and 24px of air under it, then a headline row with its count and action aligned on the baseline. The register is full width; filters sit in one wrapping row (search 22rem, selects 13rem at lg). Index grids (regions, services) are auto-fill grids of whole cells (11.5rem and 16rem minimums) ruled on all sides, so they reflow by whole cells rather than squeezing.
 
-Controls are 40px tall, small controls 32px, the lookup input and its button 48px. Register rows are 42px.
+Controls are 40px tall, small controls 32px, the lookup input and its button 48px. Register rows are 42px; bulk rows are 38px. Single and bulk lookup share the 5/7 grid; bulk results run full width under it as their own ruled section, with the plat above drawing the selected row.
 
 ### Named Rules
 **The Whole Cell Rule.** Index grids reflow in whole ruled cells; a cell never narrows below its minimum to fit one more column.
@@ -251,14 +320,14 @@ Controls are 40px tall, small controls 32px, the lookup input and its button 48p
 Flat. Surfaces sit on the ground with a 1px rule and nothing beneath them; depth inside the plat is drawn: 45-degree sage hatching for published lots, an ink outline for the window the next band enlarges, and dashed ink-2 fans leading down to the enlargement.
 
 ### Shadow Vocabulary
-- **Open popover** (`box-shadow: 0 8px 24px -12px rgb(0 0 0 / 0.35)`): the multi-select dropdown while open. The only shadow in the system.
+- **Open popover** (`box-shadow: 0 8px 24px -12px rgb(0 0 0 / 0.35)`): an open popover over other content: the multi-select list and the Copy as menu. The only shadow in the system.
 
 ### Named Rules
-**The Drawn Depth Rule.** Lots are hatched or tinted, never shadowed. The single permitted shadow belongs to a popover that is open over other content.
+**The Drawn Depth Rule.** Lots are hatched or tinted, never shadowed. The single permitted shadow belongs to a popover that is open over other content (select list, Copy as menu).
 
 ## Shapes
 
-Near-square drafting corners: 2px for labels, chips and text-action focus rings, 3px for buttons, inputs and pagination cells, 4px for record cards and the plat figure. Everything is outlined with 1px linework; the lot band carries a 1.5px sage stroke and the CIDR query span a 1.5px orange stroke. The lookup input and its button join into one 48px bar, square on the inside edge. The only round shapes are the queried point (r 4.5 with a paper halo) and the loading pulse dot.
+Near-square drafting corners: 2px for labels, chips and text-action focus rings, 3px for buttons, inputs and pagination cells, 4px for record cards and the plat figure. Everything is outlined with 1px linework; the lot band carries a 1.5px sage stroke and the CIDR query span a 1.5px orange stroke. The lookup input and its button join into one 48px bar, square on the inside edge. The scrollbar thumb is the one softer form (6px). The only round shapes are the queried point (r 4.5 with a paper halo) and the loading pulse dot.
 
 ## Components
 
@@ -268,12 +337,18 @@ Squared, inked and quiet.
 - **Primary:** ink fill, on-ink text, 600 weight, 40px tall with 16px padding; hover lightens to 85% ink.
 - **Outline:** 1px ink stroke on transparent, hover fills sage tint.
 - **Quiet:** 1px rule stroke, hover darkens the stroke to ink. Used for the theme toggle and pagination arrows.
-- **Text action:** 13px semibold ink with a sage underline (4px offset) that darkens to ink on hover ("Copy", "Show in register", "Try" queries).
+- **Text action:** 13px semibold ink with a sage underline (4px offset) that darkens to ink on hover ("Copy", "Copy summary", "Copy link", "Show in register", "Look up a list", "Try" queries).
 - **Focus:** 2px ink outline, 2px offset, on every interactive element.
 
 ### Copy and Export (stamp in place)
 - Copy stamps "Copied" in sage ink in the same spot for two seconds; the button variant turns its stroke sage ink, the text variant drops its underline.
 - Export CSV is a primary button that becomes an outline stamp in place: "Exporting…" with a spinner, then "Exported N rows" in sage ink, or the error in danger. It never opens a toast.
+- Copy as is an outline button with a chevron, beside Export CSV. It opens the Copy as popover and then stamps its own result in place ("Preparing…", then the copied or downloaded count and format in sage ink, or the error in danger), growing in height rather than truncating.
+
+### Copy As Popover
+- Paper panel, 1px ink border, 3px corner, the open-popover shadow, right-aligned under its trigger, up to 24rem wide.
+- A 12px ink-2 header line ("Every matching row, deduplicated and sorted from N records", count in mono) over a rule, then one row per allow-list format split by pale rules: the format name in 13px semibold, its description in 12px ink-2, and two text actions, Copy and the file extension (.txt, .json, .conf, .tf, .csv).
+- Escape closes it and returns focus to the trigger.
 
 ### Chips
 - **Region chip (selected filter):** mono 12px, 1px sage border, sage-tint fill, 2px corner, with a remove control.
@@ -288,7 +363,8 @@ Squared, inked and quiet.
 
 ### Inputs / Fields
 - **Style:** paper fill, 1px rule stroke, 3px corner, 40px tall; hover darkens to ink-2, focus to ink. Placeholders in ink-2.
-- **Lookup input:** mono 18px to 20px, 48px tall, ink stroke, joined to the Look up button.
+- **Lookup input:** Lookup Input type, 48px tall, ink stroke, joined to the Look up button.
+- **Bulk input:** a resizable mono 14px textarea, at least 9.5rem tall, ink stroke, paper fill, with a live count of entries under it and a primary Look up button. "Look up a list" switches the single field to it.
 - **Error:** danger stroke and a danger-bordered alert under it.
 - **Selects:** the same field shape with a chevron; the open list is a paper popover with an ink border, mono options and sage-ink checkboxes.
 
@@ -301,7 +377,10 @@ Squared, inked and quiet.
 A ruled table, ink rules top and bottom and under the head, pale rules between 42px rows. The first column is "Lot no.", a sage-ink running number that continues across pages. Prefixes are mono medium; regions use the region label; versions and border groups are ink-2. The matched row fills sage tint and sets its prefix in survey orange text. Column heads are 12px semibold with sort arrows; the active one goes ink.
 
 ### Matched Lot Record (signature)
-The answer card: the prefix in Prefix Hero, a line under it with "Matched lot" in orange text then the first-to-last address range and size in mono, a Copy prefix button, then a ruled definition grid (region labels, services joined by middots, border group in mono), then text actions. Records that share a prefix are grouped into this one lot, with their services and regions listed together; further containing lots follow as compact ruled rows, most specific first.
+The answer card: the prefix in Prefix Hero, a line under it with "Matched lot" in orange text then the first-to-last address range and size in mono, a Copy prefix button, then a ruled definition grid (region labels, services joined by middots, border group in mono), then text actions (Copy summary, Copy link to the shareable view, Show in register). Records that share a prefix are grouped into this one lot, with their services and regions listed together; further containing lots follow as compact ruled rows, most specific first.
+
+### Bulk Lookup Table (signature)
+A ruled section with its own headline, a mono summary ("N of M are AWS · N not AWS · N invalid") and the Copy as and Export CSV pair. The table sits in a 30rem scroll box between ink rules with a sticky ground-filled head (12px semibold ink-2). Rows are 38px with pale rules: a sage-ink running number, the input (a text action that draws its plat), the matched prefix in mono medium, services, region labels, border group, and Copy. Not-AWS rows read "Not AWS" in ink-2 sans; invalid rows read "Invalid" in danger semibold with the reason in 12px ink-2 and are not selectable. The selected row fills sage tint and sets its lot prefix in survey orange text, the same treatment as the matched register row.
 
 ### Parcel Strip (signature)
 The plat. Bands stack top to bottom, each the outlined window of the band above enlarged to full width, drawn to scale at the measured width so text stays at its real size. Each band has a label row above it (plat label plus mono CIDR on the left, size in mono on the right, then services and regions for the lot), the band body (paper with ink stroke for blocks, sage tint with a 1.5px sage stroke for the lot), quarter lines, hatched published prefixes, the orange matched-lot position, and mono quarter addresses below. The queried point settles onto the last band (6px drop, 520ms, cubic-bezier(0.16, 1, 0.3, 1)), its only authored motion, removed under reduced motion. A legend and a scale note sit under the drawing.
@@ -311,25 +390,25 @@ The plat. Bands stack top to bottom, each the outlined window of the band above 
 
 **The One Lot Rule.** Records that share a prefix are one lot. Group them; list their services and regions together; never repeat the prefix as separate answers.
 
-**The Numbered Lot Rule.** Register rows are numbered as lots, in sage ink, continuing across pages.
+**The Numbered Lot Rule.** Register and bulk rows are numbered as lots, in sage ink; register numbers continue across pages.
 
-**The Stamp In Place Rule.** Copy and export report their state in the control that was pressed, in sage ink or danger, and then return to rest. No toasts.
+**The Stamp In Place Rule.** Copy, Copy as and export report their state in the control that was pressed, in sage ink or danger, and then return to rest. No toasts.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** reserve survey orange for the queried point and the matched lot, its "Matched lot" label and its register row; fills in mark, text in mark-ink (the lifted mark-ink-dark on the night ground).
+- **Do** reserve survey orange for the queried point and the matched lot, its "Matched lot" label, its register row and the selected bulk row's lot; fills in mark, text in mark-ink (the lifted mark-ink-dark on the night ground).
 - **Do** group records that share a prefix into one lot.
 - **Do** put plat labels in a row above each band and drop a colliding tick label rather than overlap it.
-- **Do** number register rows as lots, in sage ink.
+- **Do** number register and bulk rows as lots, in sage ink.
 - **Do** set every prefix, address, count and figure in the mono with tabular numerals and slashed zero.
 - **Do** open each section with a full-width 1px ink rule and a headline paired with its mono count.
 - **Do** keep region labels at their full width (8.5rem minimum, no wrap) and let index grids reflow in whole cells.
-- **Do** stamp copy and export results in place.
+- **Do** stamp copy, Copy as and export results in place.
 
 ### Don't:
 - **Don't** use orange for links, hovers, focus, headings, badges or any status other than the point and the matched lot.
-- **Don't** cast shadows on cards, bands, lots or rows; the open popover is the only shadow.
+- **Don't** cast shadows on cards, bands, lots or rows; open popovers (select list, Copy as menu) are the only shadow.
 - **Don't** set labels or figures inside a plat band, and don't scale the plat down so its text shrinks.
 - **Don't** introduce warm or cream grounds, or greys outside the fixed neutral ramp.
 - **Don't** use uppercase tracked labels outside the plat label row.

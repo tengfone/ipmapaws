@@ -15,7 +15,10 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Exports data to CSV format
  */
-export function exportToCSV(data: CombinedPrefix[], filename: string = 'aws-ip-ranges.csv'): void {
+export function exportToCSV(
+  data: CombinedPrefix[],
+  filename: string = 'aws-ip-ranges.csv'
+): void {
   try {
     const csv = Papa.unparse(data, {
       header: true,
@@ -24,7 +27,7 @@ export function exportToCSV(data: CombinedPrefix[], filename: string = 'aws-ip-r
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    
+
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
@@ -41,6 +44,26 @@ export function exportToCSV(data: CombinedPrefix[], filename: string = 'aws-ip-r
 }
 
 /**
+ * Saves text as a file download.
+ */
+export function downloadText(
+  text: string,
+  filename: string,
+  mime = 'text/plain'
+): void {
+  const blob = new Blob([text], { type: `${mime};charset=utf-8` });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
  * Copies text to clipboard
  */
 export async function copyToClipboard(text: string): Promise<boolean> {
@@ -49,7 +72,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('Error copying to clipboard:', error);
-    
+
     // Fallback to navigator.clipboard API
     if (navigator.clipboard && window.isSecureContext) {
       try {
@@ -59,7 +82,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
         console.error('Fallback clipboard error:', fallbackError);
       }
     }
-    
+
     return false;
   }
 }
@@ -72,7 +95,7 @@ export function debounce<T extends any[]>(
   delay: number
 ): (...args: T) => void {
   let timeoutId: ReturnType<typeof setTimeout>;
-  
+
   return (...args: T) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
@@ -148,7 +171,7 @@ export function isBrowser(): boolean {
  */
 export function getLocalStorage<T>(key: string, defaultValue: T): T {
   if (!isBrowser()) return defaultValue;
-  
+
   try {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
@@ -163,7 +186,7 @@ export function getLocalStorage<T>(key: string, defaultValue: T): T {
  */
 export function setLocalStorage<T>(key: string, value: T): boolean {
   if (!isBrowser()) return false;
-  
+
   try {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
@@ -171,4 +194,4 @@ export function setLocalStorage<T>(key: string, value: T): boolean {
     console.error(`Error setting localStorage key "${key}":`, error);
     return false;
   }
-} 
+}

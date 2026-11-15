@@ -19,6 +19,7 @@ function makePrefixes(count: number): CombinedPrefix[] {
 }
 
 beforeEach(() => {
+  window.history.replaceState(null, '', '/regions/us-east-1');
   fetchSpy.mockClear();
   global.fetch = fetchSpy as unknown as typeof fetch;
 });

@@ -1,18 +1,15 @@
 'use client';
 
-import React, { useCallback, useMemo, useState, startTransition } from 'react';
-import { ExportButton } from '@/components/ExportButton';
+import React, { useCallback, useMemo, useState } from 'react';
+import { ExportControls, ExportSource } from '@/components/ExportControls';
 import { FilterControls } from '@/components/FilterControls';
 import { PrefixTable } from '@/components/PrefixTable';
-import { usePagination } from '@/components/ui/pagination';
+import { useViewParams } from '@/hooks/useUrlState';
 import { filterPrefixes, sortPrefixes } from '@/lib/api';
 import { debounce } from '@/lib/utils';
-import {
-  CombinedPrefix,
-  FilterOptions,
-  SortDirection,
-  SortField,
-} from '@/types';
+import { CombinedPrefix, FilterOptions, SortField } from '@/types';
+
+const ITEMS_PER_PAGE = 50;
 
 interface LocalRegisterProps {
   /** Every prefix for this page (already scoped to the region and service). */
@@ -21,12 +18,16 @@ interface LocalRegisterProps {
   service?: string;
   loading?: boolean;
   heading: string;
+  /** AWS createDate, written into allow-list headers. */
+  createDate?: string;
 }
 
 /**
  * The register for a region or region/service page. The rows are already in
- * the page (server-rendered), so filtering, sorting and paging run locally;
- * the export goes through the API so the CSV matches the home page's export.
+ * the page (server-rendered), so filtering, sorting, paging and every export
+ * format run locally. Filters live in the URL (?q=, ?services=, ?v=, ?sort=,
+ * ?page=) so a filtered view can be shared; the region (and service) come
+ * from the path and stay locked.
  */
 export function LocalRegister({
   prefixes,
@@ -34,22 +35,23 @@ export function LocalRegister({
   service,
   loading = false,
   heading,
+  createDate,
 }: LocalRegisterProps) {
-  const lockedFilters = useMemo<FilterOptions>(
+  const [view, updateView] = useViewParams();
+  const [searchDraft, setSearchDraft] = useState<string | null>(null);
+
+  const filters = useMemo<FilterOptions>(
     () => ({
       regions: [region],
-      services: service ? [service] : [],
-      searchTerm: '',
-      includeIPv4: true,
-      includeIPv6: true,
+      services: service ? [service] : view.services,
+      searchTerm: view.q,
+      includeIPv4: view.v4,
+      includeIPv6: view.v6,
     }),
-    [region, service]
+    [region, service, view]
   );
-
-  const [filters, setFilters] = useState<FilterOptions>(lockedFilters);
-  const [searchInput, setSearchInput] = useState('');
-  const [sortField, setSortField] = useState<SortField>('prefix');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const { sortField, sortDirection } = view;
+  const searchInput = searchDraft ?? view.q;
 
   const availableServices = useMemo(
     () => Array.from(new Set(prefixes.map((p) => p.service))).sort(),
@@ -58,10 +60,11 @@ export function LocalRegister({
 
   const debouncedSetSearchTerm = useMemo(
     () =>
-      debounce((searchTerm: string) => {
-        startTransition(() => setFilters((prev) => ({ ...prev, searchTerm })));
+      debounce((q: string) => {
+        updateView({ q, page: 1 });
+        setSearchDraft((draft) => (draft === q ? null : draft));
       }, 150),
-    []
+    [updateView]
   );
 
   const rows = useMemo(
@@ -70,53 +73,65 @@ export function LocalRegister({
     [prefixes, filters, sortField, sortDirection]
   );
 
-  const { currentPage, setCurrentPage, itemsPerPage } = usePagination(
-    rows.length,
-    50
-  );
+  const totalPages = Math.max(1, Math.ceil(rows.length / ITEMS_PER_PAGE));
+  const currentPage = view.page <= totalPages ? view.page : 1;
   const pagedRows = useMemo(
     () =>
-      rows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
-    [rows, currentPage, itemsPerPage]
+      rows.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+      ),
+    [rows, currentPage]
   );
 
   const handleFilterChange = useCallback(
     (next: FilterOptions) => {
-      // The page's own region (and service) stay locked.
-      setFilters({
-        ...next,
-        regions: [region],
-        services: service ? [service] : next.services,
+      updateView({
+        services: service ? [] : next.services,
+        v4: next.includeIPv4,
+        v6: next.includeIPv6,
+        page: 1,
       });
-      setCurrentPage(1);
     },
-    [region, service, setCurrentPage]
+    [service, updateView]
   );
 
   const handleSearchChange = useCallback(
     (value: string) => {
-      setSearchInput(value);
+      setSearchDraft(value);
       debouncedSetSearchTerm(value);
     },
     [debouncedSetSearchTerm]
   );
 
   const handleClearFilters = useCallback(() => {
-    setSearchInput('');
-    setFilters(lockedFilters);
-    setCurrentPage(1);
-  }, [lockedFilters, setCurrentPage]);
+    setSearchDraft(null);
+    updateView({
+      q: '',
+      services: [],
+      v4: true,
+      v6: true,
+      sortField: 'prefix',
+      sortDirection: 'asc',
+      page: 1,
+    });
+  }, [updateView]);
 
   const handleSort = useCallback(
     (field: SortField) => {
-      if (sortField === field) {
-        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-      } else {
-        setSortField(field);
-        setSortDirection('asc');
-      }
+      updateView({
+        sortField: field,
+        sortDirection:
+          sortField === field && sortDirection === 'asc' ? 'desc' : 'asc',
+        page: 1,
+      });
     },
-    [sortField]
+    [updateView, sortField, sortDirection]
+  );
+
+  const exportSource: ExportSource = useMemo(
+    () => ({ records: async () => rows }),
+    [rows]
   );
 
   return (
@@ -143,12 +158,12 @@ export function LocalRegister({
             )}
           </p>
         </div>
-        <ExportButton
-          filters={filters}
-          sortField={sortField}
-          sortDirection={sortDirection}
+        <ExportControls
+          source={exportSource}
+          filenameBase={`aws-ip-ranges-${region}${service ? `-${service}` : ''}`}
           totalCount={rows.length}
-          filename={`aws-ip-ranges-${region}${service ? `-${service}` : ''}.csv`}
+          createDate={createDate}
+          scope={service ? `${service} in ${region}` : region}
         />
       </div>
 
@@ -164,9 +179,7 @@ export function LocalRegister({
         showRegions={false}
         showServices={!service}
         searchPlaceholder={
-          service
-            ? 'Search prefix or border group'
-            : 'Search prefix or service'
+          service ? 'Search prefix or border group' : 'Search prefix or service'
         }
       />
 
@@ -184,8 +197,8 @@ export function LocalRegister({
         sortDirection={sortDirection}
         onSort={handleSort}
         currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
+        itemsPerPage={ITEMS_PER_PAGE}
+        onPageChange={(page) => updateView({ page })}
         onClearFilters={handleClearFilters}
         linkRegions={false}
       />

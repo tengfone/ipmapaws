@@ -11,10 +11,13 @@ A comprehensive Next.js web application and REST API for exploring AWS IP addres
 ### 🌐 Web Interface
 
 - **Prefix Lookup**: Paste an IP or CIDR and see which published AWS prefix contains it (runs in your browser)
+- **Bulk Lookup**: Paste up to 1,000 IPs or CIDRs straight from a log (ports, brackets and log noise are ignored) and get one row per entry: matched prefix, "Not AWS" or "Invalid"
+- **Allow-list Formats**: Copy or download any filtered set or bulk result as a plain CIDR list, AWS security group JSON, nginx `allow` rules, Terraform `locals` or CSV, deduplicated and sorted
+- **Shareable Links**: The lookup and register filters live in the URL (`?ip=3.5.140.2&regions=us-east-1&services=S3&v=4`), so any view can be shared or bookmarked
 - **Advanced Search & Filtering**: Filter by region, service, CIDR notation, IPv4/IPv6
 - **Fresh Data**: Read straight from AWS's official `ip-ranges.json`, refreshed hourly
 - **Interactive Tables**: Sortable, paginated results with copy-to-clipboard
-- **CSV Export**: Export filtered results for external analysis
+- **CSV Export**: Export every row matching the filters, not just the visible page
 - **Responsive Design**: Mobile-friendly interface built with Tailwind CSS
 - **SEO Optimized**: Static generation for all region/service combinations
 - **Dark Mode**: Automatic theme detection and switching

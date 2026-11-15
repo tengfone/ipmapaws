@@ -1,40 +1,76 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, startTransition } from 'react';
-import { ExportButton } from '@/components/ExportButton';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import {
+  apiExportSource,
+  ExportControls,
+  ExportSource,
+} from '@/components/ExportControls';
 import { FilterControls } from '@/components/FilterControls';
 import { PrefixLookup } from '@/components/PrefixLookup';
 import { PrefixTable } from '@/components/PrefixTable';
 import { useAWSIPRanges, useAWSIPRangesSearch } from '@/hooks/useAWSIPRanges';
-import { FilterOptions, SortField, SortDirection } from '@/types';
+import { useViewParams } from '@/hooks/useUrlState';
+import { filterPrefixes, sortPrefixes } from '@/lib/api';
+import { DEFAULT_VIEW } from '@/lib/url-state';
 import { debounce } from '@/lib/utils';
-
-const defaultFilters: FilterOptions = {
-  regions: [],
-  services: [],
-  searchTerm: '',
-  includeIPv4: true,
-  includeIPv6: true,
-};
+import { FilterOptions, SortField } from '@/types';
 
 const ITEMS_PER_PAGE = 50;
 
+/** Register filters as the export API's query parameters. */
+function exportParams(
+  filters: FilterOptions,
+  sortField: SortField,
+  sortDirection: string
+) {
+  const params = new URLSearchParams();
+  if (filters.regions.length > 0)
+    params.set('regions', filters.regions.join(','));
+  if (filters.services.length > 0)
+    params.set('services', filters.services.join(','));
+  if (filters.searchTerm) params.set('searchTerm', filters.searchTerm);
+  params.set('includeIPv4', String(filters.includeIPv4));
+  params.set('includeIPv6', String(filters.includeIPv6));
+  params.set('sortField', sortField);
+  params.set('sortDirection', sortDirection);
+  return params;
+}
+
 export default function HomePage() {
-  const [filters, setFilters] = useState<FilterOptions>(defaultFilters);
-  const [searchInput, setSearchInput] = useState('');
-  const [sortField, setSortField] = useState<SortField>('prefix');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [currentPage, setCurrentPage] = useState(1);
+  // Lookup and register state live in the URL (see useViewParams), so any
+  // view can be shared and reloaded.
+  const [view, updateView] = useViewParams();
+  const [searchDraft, setSearchDraft] = useState<string | null>(null);
   const [bestPrefix, setBestPrefix] = useState<string | null>(null);
 
-  const { regions, services, error: metadataError } = useAWSIPRanges();
+  const filters: FilterOptions = useMemo(
+    () => ({
+      regions: view.regions,
+      services: view.services,
+      searchTerm: view.q,
+      includeIPv4: view.v4,
+      includeIPv6: view.v6,
+    }),
+    [view]
+  );
+  const { sortField, sortDirection, page } = view;
+  const searchInput = searchDraft ?? view.q;
+
+  const {
+    data,
+    regions,
+    services,
+    combinedPrefixes,
+    error: metadataError,
+  } = useAWSIPRanges();
   const {
     data: searchResults,
     pagination,
     isLoading: searchLoading,
     error: searchError,
   } = useAWSIPRangesSearch(
-    currentPage,
+    page,
     ITEMS_PER_PAGE,
     filters,
     sortField,
@@ -43,61 +79,93 @@ export default function HomePage() {
 
   const debouncedSetSearchTerm = useMemo(
     () =>
-      debounce((searchTerm: string) => {
-        startTransition(() => {
-          setFilters((prev) => ({ ...prev, searchTerm }));
-          setCurrentPage(1);
-        });
+      debounce((q: string) => {
+        updateView({ q, page: 1 });
+        setSearchDraft((draft) => (draft === q ? null : draft));
       }, 300),
-    []
+    [updateView]
   );
 
-  const handleFilterChange = useCallback((newFilters: FilterOptions) => {
-    setFilters(newFilters);
-    setCurrentPage(1);
-  }, []);
+  const handleFilterChange = useCallback(
+    (next: FilterOptions) => {
+      updateView({
+        regions: next.regions,
+        services: next.services,
+        v4: next.includeIPv4,
+        v6: next.includeIPv6,
+        page: 1,
+      });
+    },
+    [updateView]
+  );
 
   const handleSearchChange = useCallback(
     (value: string) => {
-      setSearchInput(value);
+      setSearchDraft(value);
       debouncedSetSearchTerm(value);
     },
     [debouncedSetSearchTerm]
   );
 
   const handleClearFilters = useCallback(() => {
-    setFilters(defaultFilters);
-    setSearchInput('');
-    setCurrentPage(1);
-  }, []);
+    setSearchDraft(null);
+    updateView({ ...DEFAULT_VIEW, ip: view.ip });
+  }, [updateView, view.ip]);
 
   const handleSort = useCallback(
     (field: SortField) => {
-      if (sortField === field) {
-        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-      } else {
-        setSortField(field);
-        setSortDirection('asc');
-      }
-      setCurrentPage(1);
+      updateView({
+        sortField: field,
+        sortDirection:
+          sortField === field && sortDirection === 'asc' ? 'desc' : 'asc',
+        page: 1,
+      });
     },
-    [sortField]
+    [updateView, sortField, sortDirection]
   );
 
-  const handleShowInRegister = useCallback((prefix: string) => {
-    setSearchInput(prefix);
-    setFilters({ ...defaultFilters, searchTerm: prefix });
-    setCurrentPage(1);
-    document.getElementById('register')?.scrollIntoView({ block: 'start' });
-  }, []);
+  const handleShowInRegister = useCallback(
+    (prefix: string) => {
+      setSearchDraft(null);
+      updateView({ ...DEFAULT_VIEW, ip: view.ip, q: prefix });
+      document.getElementById('register')?.scrollIntoView({ block: 'start' });
+    },
+    [updateView, view.ip]
+  );
+
+  const total = pagination.total;
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+
+  // A shared link may point past the last page of today's data.
+  useEffect(() => {
+    if (!searchLoading && total > 0 && page > totalPages)
+      updateView({ page: 1 });
+  }, [searchLoading, total, page, totalPages, updateView]);
+
+  // The full dataset is usually already in the browser for the lookup, so
+  // exports format it locally; until then they go through the export API.
+  const exportSource: ExportSource = useMemo(() => {
+    if (combinedPrefixes.length > 0) {
+      return {
+        records: async () =>
+          sortPrefixes(
+            filterPrefixes(combinedPrefixes, filters),
+            sortField,
+            sortDirection
+          ),
+      };
+    }
+    return apiExportSource(exportParams(filters, sortField, sortDirection));
+  }, [combinedPrefixes, filters, sortField, sortDirection]);
 
   const error = metadataError || searchError;
-  const total = pagination.total;
 
   return (
     <div className="page pt-8 sm:pt-10">
       <PrefixLookup
         headingAs="h1"
+        query={view.ip}
+        onQuery={(ip) => updateView({ ip })}
         onBestMatch={setBestPrefix}
         onShowInRegister={handleShowInRegister}
       />
@@ -131,11 +199,11 @@ export default function HomePage() {
               )}
             </p>
           </div>
-          <ExportButton
-            filters={filters}
-            sortField={sortField}
-            sortDirection={sortDirection}
+          <ExportControls
+            source={exportSource}
+            filenameBase="aws-ip-ranges"
             totalCount={searchLoading ? undefined : total}
+            createDate={data?.createDate}
           />
         </div>
 
@@ -176,7 +244,7 @@ export default function HomePage() {
             onSort={handleSort}
             currentPage={pagination.page}
             itemsPerPage={pagination.limit}
-            onPageChange={setCurrentPage}
+            onPageChange={(next) => updateView({ page: next })}
             highlightPrefix={bestPrefix}
             onClearFilters={handleClearFilters}
           />
